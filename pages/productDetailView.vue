@@ -128,14 +128,18 @@ async function addToCart() {
 <style scoped>
 .bg-cream { background: #F2EDE6; }
 
+/* ===== MODAL BASE (mobile first) ===== */
 .product-modal-box {
-  max-width: 860px !important;
-  flex-direction: row !important;
-  max-height: 92vh;
+  max-width: 100%;
+  width: 100%;
+  flex-direction: column;
+  max-height: 95vh;
+  overflow-y: auto;
 }
 
 .modal-img-side {
-  width: 420px;
+  width: 100%;
+  height: 220px;
   flex-shrink: 0;
   background: var(--cream-dark);
   display: flex;
@@ -152,13 +156,13 @@ async function addToCart() {
 
 .img-placeholder {
   opacity: 0.2;
-  font-size: 72px;
+  font-size: 56px;
   color: var(--black);
 }
 
 .modal-body-side {
   flex: 1;
-  padding: 2.5rem 2rem;
+  padding: 1.25rem 1.25rem 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -170,37 +174,37 @@ async function addToCart() {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--burgundy);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: block;
 }
 
 .prod-modal-name {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 300;
   font-style: italic;
   line-height: 1.15;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .prod-modal-ref {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--gray);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   display: block;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .prod-divider {
   border: none;
   border-top: 1px solid var(--border);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .prod-modal-price {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 400;
   color: var(--black);
   margin-bottom: 4px;
@@ -209,14 +213,14 @@ async function addToCart() {
 .prod-price-unit {
   font-size: 12px;
   color: var(--gray);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .prod-modal-desc {
   font-size: 13px;
   color: var(--gray);
-  line-height: 1.7;
-  margin-bottom: 20px;
+  line-height: 1.65;
+  margin-bottom: 16px;
 }
 
 .prod-stock-info {
@@ -225,7 +229,7 @@ async function addToCart() {
   gap: 6px;
   font-size: 12px;
   color: var(--gray);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .stock-dot {
@@ -250,16 +254,16 @@ async function addToCart() {
   align-items: center;
   border: 1px solid var(--border);
   width: fit-content;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .qty-btn {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 17px;
   color: var(--black);
   display: flex;
   align-items: center;
@@ -271,17 +275,108 @@ async function addToCart() {
 .qty-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .qty-num {
-  width: 44px;
+  width: 42px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
-  line-height: 38px;
+  line-height: 36px;
 }
 
-@media (max-width: 700px) {
-  .product-modal-box { flex-direction: column !important; }
-  .modal-img-side { width: 100%; height: 260px; }
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== TABLET (>= 640px) ===== */
+@media (min-width: 640px) {
+  .modal-img-side {
+    height: 320px;
+  }
+
+  .modal-body-side {
+    padding: 2rem 1.75rem;
+  }
+
+  .prod-modal-name {
+    font-size: 25px;
+  }
+
+  .prod-modal-price {
+    font-size: 24px;
+  }
+}
+
+/* ===== DESKTOP (>= 900px) — layout lado a lado ===== */
+@media (min-width: 900px) {
+  .product-modal-box {
+    max-width: 860px;
+    width: auto;
+    flex-direction: row;
+    max-height: 92vh;
+  }
+
+  .modal-img-side {
+    width: 420px;
+    height: auto;
+  }
+
+  .modal-body-side {
+    padding: 2.5rem 2rem;
+  }
+
+  .prod-modal-name {
+    font-size: 28px;
+  }
+
+  .prod-modal-price {
+    font-size: 26px;
+  }
+
+  .prod-modal-ref {
+    margin-bottom: 18px;
+  }
+
+  .prod-divider {
+    margin-bottom: 18px;
+  }
+
+  .prod-modal-desc {
+    margin-bottom: 20px;
+  }
+
+  .prod-stock-info {
+    margin-bottom: 18px;
+  }
+
+  .qty-row {
+    margin-bottom: 24px;
+  }
+
+  .qty-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+
+  .qty-num {
+    width: 44px;
+    font-size: 15px;
+    line-height: 38px;
+  }
 }
 </style>

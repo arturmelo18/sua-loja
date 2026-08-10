@@ -97,18 +97,19 @@ definePageMeta({ middleware: 'auth' })
 <style scoped>
 .bg-cream { background: #F2EDE6; }
 
+/* ===== WRAPPER (mobile first) ===== */
 .checkout-wrapper {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 3rem 2rem;
+  padding: 1.25rem 1rem;
   min-height: calc(100vh - 64px);
 }
 
 .checkout-card {
   background: #fff;
   border-radius: 12px;
-  padding: 2.5rem;
+  padding: 1.5rem 1.25rem;
   width: 100%;
   max-width: 560px;
   border: 0.5px solid rgba(74, 15, 1, 0.07);
@@ -116,12 +117,12 @@ definePageMeta({ middleware: 'auth' })
 
 .checkout-title {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 300;
   font-style: italic;
   color: var(--black);
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -131,25 +132,39 @@ definePageMeta({ middleware: 'auth' })
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--gray);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .order-summary {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .order-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   padding: 8px 0;
   border-bottom: 1px solid rgba(74, 15, 1, 0.05);
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.order-item-name { flex: 1; color: var(--black); }
-.order-item-qty { color: var(--gray); font-size: 13px; }
-.order-item-price { font-weight: 500; color: var(--black); min-width: 80px; text-align: right; }
+.order-item-name {
+  flex: 1 1 100%;
+  color: var(--black);
+}
+
+.order-item-qty {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.order-item-price {
+  font-weight: 500;
+  color: var(--black);
+  margin-left: auto;
+  text-align: right;
+}
 
 .order-total {
   display: flex;
@@ -158,22 +173,22 @@ definePageMeta({ middleware: 'auth' })
   padding-top: 12px;
   margin-top: 4px;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 15px;
 }
 
-.total-value { color: #4a0f01; font-size: 18px; }
+.total-value { color: #4a0f01; font-size: 17px; }
 
 .delivery-info {
   background: #F2EDE6;
   border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 2rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .address-text {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray);
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 .btn-outline {
@@ -184,5 +199,65 @@ definePageMeta({ middleware: 'auth' })
 
 .btn-outline:hover {
   border-color: var(--black);
+}
+
+/* ===== TABLET / DESKTOP (>= 640px) ===== */
+@media (min-width: 640px) {
+  .checkout-wrapper {
+    padding: 3rem 2rem;
+  }
+
+  .checkout-card {
+    padding: 2.5rem;
+  }
+
+  .checkout-title {
+    font-size: 28px;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+  }
+
+  .summary-label {
+    margin-bottom: 1rem;
+  }
+
+  .order-summary {
+    margin-bottom: 2rem;
+  }
+
+  .order-item {
+    flex-wrap: nowrap;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .order-item-name {
+    flex: 1;
+  }
+
+  .order-item-qty {
+    font-size: 13px;
+  }
+
+  .order-item-price {
+    min-width: 80px;
+    margin-left: 0;
+  }
+
+  .order-total {
+    font-size: 16px;
+  }
+
+  .total-value { font-size: 18px; }
+
+  .delivery-info {
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .address-text {
+    font-size: 14px;
+    line-height: 1.7;
+  }
 }
 </style>
