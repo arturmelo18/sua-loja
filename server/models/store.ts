@@ -8,6 +8,10 @@ export const StoreSchema = defineMongooseModel<Store>({
             type: String,
             required: true,
         },
+        community: {
+            type: String,
+            required: true
+        },
         slides: [
             {
                 title: { type: String, required: true },

@@ -1,5 +1,6 @@
 export interface Product {
   _id: string
+  community: string
   name: string
   price: number
   quantity: number

@@ -39,6 +39,10 @@ export const CartSchema = defineMongooseModel<Cart>({
       unique: true,
       index: true,
     },
+    community: {
+      type: String,
+      required: true
+    },
     items: [
       {
         type: Schema.Types.ObjectId,
