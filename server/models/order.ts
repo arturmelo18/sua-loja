@@ -10,6 +10,10 @@ export const OrderSchema = defineMongooseModel<Order>({
       ref: 'User',
       required: true,
     },
+    community: {
+      type: String,
+      required: true
+    },
     items: [
       {
         type: Schema.Types.ObjectId,
