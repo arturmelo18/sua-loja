@@ -1,5 +1,5 @@
 import { StoreSchema } from '~/server/models/store'
-import { generateCdnImage } from '~/server/utils/helpers/generateCdnImage'
+import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
     const { name, slides } = await readBody(event)

@@ -1,5 +1,5 @@
 import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
-import { generateCdnImage } from '~/server/utils/helpers/generateCdnImage'
+import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)

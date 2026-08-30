@@ -1,4 +1,4 @@
-import { generateCdnImage } from '~/server/utils/helpers/generateCdnImage'
+import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
 
 export default defineEventHandler(async (event) => {
