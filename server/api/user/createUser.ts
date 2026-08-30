@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement } = body
+  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement, community } = body
 
   if (!name || !email || !password || !zipcode || !state || !city || !neighborhood || !street || !number) {
     throw createError({
@@ -76,6 +76,7 @@ export default defineEventHandler(async (event) => {
   try {
     return await UserSchema.create({
       name,
+      community,
       email,
       password: hashedPassword,
       // TODO: mudar isso quando a tela de administrador for criada

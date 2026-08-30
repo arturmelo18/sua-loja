@@ -6,10 +6,12 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     cart: null as Cart | null,
+    community: null as String | null,
   }),
   getters: {
     getUser: state => state.user,
     getCart: state => state.cart,
+    getCommunity: state => state.community,
     isAuthenticated: state => state.user !== null,
     isAdmin: state => state.user?.kind === 'admin',
   },
@@ -19,6 +21,12 @@ export const useAuthStore = defineStore('auth', {
     },
     clearUser() {
       this.user = null
+    },
+    setCommunity(community: String) {
+      this.community = community
+    },
+    clearCommunity() {
+      this.community = null
     },
     setCart(cart: Cart) {
       this.cart = cart
