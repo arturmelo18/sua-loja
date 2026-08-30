@@ -2,18 +2,23 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const limit = Number(query.limit) || 10
   const page = Number(query.page) || 1
+  const rawCommunity = String(query.community || '').trim()
+  const community = rawCommunity.replace(/^@/, '')
 
   const skip = (page - 1) * limit
+  const filter: any = { published: true }
+
+  if (community) {
+    filter.community = community
+  }
 
   try {
-    const products = await ProductSchema.find({
-      published: true
-    })
+    const products = await ProductSchema.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
 
-    const total = await ProductSchema.countDocuments({ published: true })
+    const total = await ProductSchema.countDocuments(filter)
 
     return {
       data: products,
