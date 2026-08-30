@@ -2,14 +2,14 @@ import { StoreSchema } from '~/server/models/store'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
-    const { name, slides } = await readBody(event)
+    const { name, community, slides } = await readBody(event)
+    const normalizedCommunity = String(community || '').trim().replace(/^@/, '').toLowerCase()
 
-    if (!name || !slides?.length) {
-        throw createError({ statusCode: 400, statusMessage: 'name e slides são obrigatórios' })
+    if (!name || !normalizedCommunity || !slides?.length) {
+        throw createError({ statusCode: 400, statusMessage: 'name, community e slides são obrigatórios' })
     }
 
     try {
-        // Processa imagens novas (base64) e mantém URLs já existentes
         const processedSlides = await Promise.all(
             slides.map(async (slide: any) => {
                 if (slide.image?.startsWith('data:')) {
@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
 
         const store = await StoreSchema.findOneAndUpdate(
             {},
-            { name, slides: processedSlides },
-            { new: true, upsert: true }  // cria se não existir
+            { name, community: normalizedCommunity, slides: processedSlides },
+            { new: true, upsert: true }
         )
 
         return store

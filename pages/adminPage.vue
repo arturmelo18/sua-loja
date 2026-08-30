@@ -300,6 +300,13 @@
                 </span>
                 <el-input v-model="storeForm.name" placeholder="Ex: Fatecano" />
               </label>
+
+              <label class="filter-group" style="display:flex;flex-direction:column;gap:4px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#6B6B6B;font-weight:500;">
+                  Comunidade / URL
+                </span>
+                <el-input v-model="storeForm.community" placeholder="Ex: fatecano" />
+              </label>
             </div>
 
             <div style="margin-bottom: 1rem;">
@@ -741,6 +748,7 @@ const isSavingStore  = ref(false)
 
 const storeForm = reactive({
   name: '',
+  community: '',
   slides: [] as StoreSlide[],
 })
 
@@ -749,12 +757,14 @@ async function loadStore() {
   try {
     const store = await $fetch<Store | null>('/api/store/getStore')
     if (store) {
-      storeForm.name   = store.name
-      storeForm.slides = store.slides
+      storeForm.name      = store.name
+      storeForm.community = store.community || ''
+      storeForm.slides    = store.slides
     } else {
       // default se não existir ainda
-      storeForm.name   = 'Fatecano'
-      storeForm.slides = [{ title: '', description: '', image: '' }]
+      storeForm.name      = 'Fatecano'
+      storeForm.community = 'fatecano'
+      storeForm.slides    = [{ title: '', description: '', image: '' }]
     }
   } catch {
     ElMessage.error('Erro ao carregar configurações da loja')
@@ -789,6 +799,14 @@ async function saveStore() {
     ElMessage.error('Nome da loja é obrigatório')
     return
   }
+
+  const communityValue = String(storeForm.community || '').trim().replace(/^@/, '').toLowerCase()
+
+  if (!communityValue) {
+    ElMessage.error('A comunidade / URL é obrigatória')
+    return
+  }
+
   const invalid = storeForm.slides.some(s => !s.title || !s.image)
   if (invalid) {
     ElMessage.error('Todos os slides precisam de título e imagem')
@@ -799,7 +817,11 @@ async function saveStore() {
   try {
     await $fetch('/api/store/updateStore', {
       method: 'PUT',
-      body: { name: storeForm.name, slides: storeForm.slides },
+      body: {
+        name: storeForm.name,
+        community: communityValue,
+        slides: storeForm.slides,
+      },
     })
     ElMessage.success('Loja atualizada com sucesso!')
   } catch (e: any) {
