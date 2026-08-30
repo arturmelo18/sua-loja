@@ -72,7 +72,7 @@ async function goToPayment() {
   isLoading.value = true
   try {
     const { checkoutUrl } = await $fetch<{ orderId: string; checkoutUrl: string }>(
-      '/api/order/createCheckout',
+      '/api/order/createOrder',
       {
         method: 'POST',
         body: {

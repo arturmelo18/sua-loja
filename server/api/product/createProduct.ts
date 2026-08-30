@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, price, quantity, description, active, image } = body
+  const { name, price, quantity, description, active, image, community } = body
 
   if (!name || !price || !quantity || !description || !image) {
     throw createError({
@@ -53,6 +53,7 @@ export default defineEventHandler(async (event) => {
   try {
     const product = await ProductSchema.create({
       name,
+      community,
       price,
       quantity,
       description,
