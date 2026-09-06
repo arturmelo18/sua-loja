@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', {
     setStore(store: String) {
       this.store = store
     },
-    clearCommunity() {
+    clearStore() {
       this.community = null
     },
     setCart(cart: Cart) {
