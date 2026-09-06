@@ -4,7 +4,7 @@ import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
 import { generateSaleCode } from '~/server/utils/generateSaleCode'
 
 export default defineEventHandler(async (event) => {
-  const { cartId, userId, community } = await readBody(event)
+  const { cartId, userId, store } = await readBody(event)
 
   if (!cartId || !userId) {
     throw createError({ statusCode: 400, statusMessage: 'cartId e userId são obrigatórios' })
