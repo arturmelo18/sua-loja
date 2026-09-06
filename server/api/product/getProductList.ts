@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const skip = (page - 1) * limit
   const filter: any = { published: true }
 
-  if (community) {
+  if (store) {
     filter.community = community
   }
 
