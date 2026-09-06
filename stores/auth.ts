@@ -6,7 +6,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
     cart: null as Cart | null,
-    community: null as String | null,
+    store: null as String | null,
   }),
   getters: {
     getUser: state => state.user,
