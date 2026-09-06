@@ -303,9 +303,9 @@
 
               <label class="filter-group" style="display:flex;flex-direction:column;gap:4px;">
                 <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#6B6B6B;font-weight:500;">
-                  Comunidade / URL
+                  Loja / URL
                 </span>
-                <el-input v-model="storeForm.community" placeholder="Ex: fatecano" />
+                <el-input v-model="storeForm.store" placeholder="Ex: fatecano" />
               </label>
             </div>
 
@@ -748,7 +748,7 @@ const isSavingStore  = ref(false)
 
 const storeForm = reactive({
   name: '',
-  community: '',
+  store: '',
   slides: [] as StoreSlide[],
 })
 
@@ -758,12 +758,12 @@ async function loadStore() {
     const store = await $fetch<Store | null>('/api/store/getStore')
     if (store) {
       storeForm.name      = store.name
-      storeForm.community = store.community || ''
+      storeForm.store = store.store || ''
       storeForm.slides    = store.slides
     } else {
       // default se não existir ainda
       storeForm.name      = 'Fatecano'
-      storeForm.community = 'fatecano'
+      storeForm.store = 'fatecano'
       storeForm.slides    = [{ title: '', description: '', image: '' }]
     }
   } catch {
@@ -800,10 +800,10 @@ async function saveStore() {
     return
   }
 
-  const communityValue = String(storeForm.community || '').trim().replace(/^@/, '').toLowerCase()
+  const storeValue = String(storeForm.store || '').trim().replace(/^@/, '').toLowerCase()
 
-  if (!communityValue) {
-    ElMessage.error('A comunidade / URL é obrigatória')
+  if (!storeValue) {
+    ElMessage.error('A loja / URL é obrigatória')
     return
   }
 
@@ -819,7 +819,7 @@ async function saveStore() {
       method: 'PUT',
       body: {
         name: storeForm.name,
-        community: communityValue,
+        store: storeValue,
         slides: storeForm.slides,
       },
     })
