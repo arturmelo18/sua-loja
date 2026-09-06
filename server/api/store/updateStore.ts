@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
         const store = await StoreSchema.findOneAndUpdate(
             {},
-            { name, community: normalizedCommunity, slides: processedSlides },
+            { name, store: normalizedStore, slides: processedSlides },
             { new: true, upsert: true }
         )
 
