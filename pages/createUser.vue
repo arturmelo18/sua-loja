@@ -117,6 +117,8 @@
 <script lang="ts" setup>
 import type { ViaCep } from '~/types/ViaCep'
 
+const route = useRoute()
+
 const state = reactive({
   name: '',
   email: '',
@@ -177,7 +179,8 @@ async function createUser() {
 
     ElMessage.success('Usuário criado com sucesso!')
 
-    await navigateTo('/loginPage?next=/storeSettings')
+    const nextPath = route.query.intent === 'store' ? '/storeSettings' : '/'
+    await navigateTo(`/loginPage?next=${encodeURIComponent(nextPath)}`)
   }
   catch (error: any) {
     ElMessage.error(error.data?.statusMessage || 'Erro ao criar usuário')

@@ -11,13 +11,21 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { _id, name, price, quantity, description, image, published, active } = body
+  const { _id, name, price, quantity, description, image, published, active, category, variants } = body
+  const normalizedVariants = Array.isArray(variants)
+    ? variants
+      .map((variant: any) => ({ name: String(variant.name || '').trim(), quantity: Number(variant.quantity) || 0 }))
+      .filter((variant: { name: string }) => variant.name)
+    : undefined
+  const totalQuantity = normalizedVariants?.length
+    ? normalizedVariants.reduce((total: number, variant: { quantity: number }) => total + variant.quantity, 0)
+    : quantity
 
   if (price !== undefined && price < 0) {
     throw createError({ statusCode: 400, statusMessage: 'Preço deve ser positivo.' })
   }
 
-  if (quantity !== undefined && quantity < 0) {
+  if (totalQuantity !== undefined && totalQuantity < 0) {
     throw createError({ statusCode: 400, statusMessage: 'Quantidade deve ser positiva.' })
   }
 
@@ -38,7 +46,9 @@ export default defineEventHandler(async (event) => {
       {
         name: name ?? existingProduct.name,
         price: price ?? existingProduct.price,
-        quantity: quantity ?? existingProduct.quantity,
+        quantity: totalQuantity ?? existingProduct.quantity,
+        category: category ?? existingProduct.category,
+        variants: normalizedVariants ?? existingProduct.variants,
         description: description ?? existingProduct.description,
         image: finalImageUrl,
         published: published ?? existingProduct.published,

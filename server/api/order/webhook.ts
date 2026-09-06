@@ -28,11 +28,18 @@ export default defineEventHandler(async (event) => {
     const product = await ProductSchema.findById(item.product._id)
     if (!product) continue
 
-    const newQuantity = product.quantity - item.quantity
+    const selectedVariant = product.variants?.find(variant => variant.name === item.variantName)
+    if (selectedVariant) {
+      selectedVariant.quantity -= item.quantity
+      product.variants = product.variants?.map(variant =>
+        variant.name === selectedVariant.name ? selectedVariant : variant
+      )
+      product.quantity = product.variants?.reduce((total, variant) => total + variant.quantity, 0) || 0
+    } else {
+      product.quantity -= item.quantity
+    }
 
-    await ProductSchema.findByIdAndUpdate(product._id, {
-      quantity: newQuantity,
-    })
+    await product.save()
 
     if (product.abacatePayId) {
       await AbacatePayConnector.delete('/products/delete', {

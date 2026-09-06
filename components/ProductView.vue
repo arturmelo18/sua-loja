@@ -10,7 +10,11 @@
       </div>
     </div>
     <div class="prod-info">
+      <span v-if="product.category" class="prod-category">{{ product.category }}</span>
       <div class="prod-name">{{ product.name }}</div>
+      <div v-if="product.variants?.length" class="prod-variants">
+        {{ product.variants.map(variant => variant.name).join(' · ') }}
+      </div>
       <div class="prod-price-row">
         <span class="prod-price">{{ formattedPrice }}</span>
       </div>
@@ -98,6 +102,18 @@ function goToDetailView() {
 
 .prod-price {
   color: var(--store-color, #7A1F2E);
+}
+
+.prod-category,
+.prod-variants {
+  color: #777;
+  font-size: .72rem;
+}
+
+.prod-category {
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 .unavailable-overlay {

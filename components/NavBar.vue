@@ -31,9 +31,13 @@
               <i class="uil uil-shopping-bag"></i>
               <span>Meus pedidos</span>
             </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo(adminPath)" v-if="isAdmin && !isMobile">
+            <el-dropdown-item class="w-full" @click="navigateTo('/adminPage')" v-if="isAdmin && !isSuperAdmin && !isMobile">
               <i class="uil uil-setting"></i>
-              <span>Área do administrador</span>
+              <span>Administração da loja</span>
+            </el-dropdown-item>
+            <el-dropdown-item class="w-full" @click="navigateTo('/superAdminPage')" v-if="isSuperAdmin && !isMobile">
+              <i class="uil uil-shield-check"></i>
+              <span>Administração da plataforma</span>
             </el-dropdown-item>
             <el-dropdown-item class="w-full" @click="logout">
               <i class="uil uil-signout"></i>
@@ -59,7 +63,7 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const route = useRoute()
-const storeName = ref('Fatecano')
+const storeName = ref('Sua loja')
 const isMobile = ref(false)
 const storeSlug = computed(() => String(route.params.store || authStore.getUser?.store || '').replace(/^@/, ''))
 const storePath = computed(() => storeSlug.value ? `/${storeSlug.value}` : '/')
@@ -96,7 +100,7 @@ const isAdmin = computed(() => {
   return authStore.isAdmin
 })
 
-const adminPath = computed(() => authStore.isSuperAdmin ? '/superAdminPage' : '/adminPage')
+const isSuperAdmin = computed(() => authStore.isSuperAdmin)
 </script>
 
 <style scoped>

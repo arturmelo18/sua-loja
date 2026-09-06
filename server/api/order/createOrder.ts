@@ -22,10 +22,13 @@ export default defineEventHandler(async (event) => {
   const items = cart.items as any[]
 
   for (const item of items) {
-    if (item.product.quantity < item.quantity) {
+    const variant = item.product.variants?.find((productVariant: any) => productVariant.name === item.variantName)
+    const availableQuantity = variant ? variant.quantity : item.product.quantity
+
+    if (availableQuantity < item.quantity) {
       throw createError({
         statusCode: 400,
-        statusMessage: `Estoque insuficiente para "${item.product.name}". Disponível: ${item.product.quantity}`,
+        statusMessage: `Estoque insuficiente para "${item.product.name}"${item.variantName ? ` (${item.variantName})` : ''}. Disponível: ${availableQuantity}`,
       })
     }
   }

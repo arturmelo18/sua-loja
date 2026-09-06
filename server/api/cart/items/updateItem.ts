@@ -1,4 +1,5 @@
 import { CartItemSchema } from '~/server/models/cart'
+import { ProductSchema } from '~/server/models/product'
 
 export default defineEventHandler(async (event) => {
   const { cartItemId, quantity } = await readBody(event)
@@ -29,6 +30,13 @@ export default defineEventHandler(async (event) => {
         statusCode: 404,
         statusMessage: 'Item não encontrado',
       })
+    }
+
+    const currentItem = await CartItemSchema.findById(cartItemId).lean()
+    const product = currentItem ? await ProductSchema.findById(currentItem.product).lean() : null
+    const variant = product?.variants?.find(item => item.name === currentItem?.variantName)
+    if (variant && quantity > variant.quantity) {
+      throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente para esta variação' })
     }
 
     return item

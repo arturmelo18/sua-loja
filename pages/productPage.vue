@@ -47,6 +47,11 @@
                         <label for="product-name">Nome do produto</label>
                         <el-input id="product-name" placeholder="Ex: Caneca Manuel Gomes" v-model="state.product.name"/>
                     </div>
+
+                    <div class="form-item">
+                      <label for="product-category">Categoria</label>
+                      <el-input id="product-category" placeholder="Ex: Camisa" v-model="state.product.category"/>
+                    </div>
                     
                     <div class="form-row">
                         <div class="form-item size-half">
@@ -61,11 +66,28 @@
                                 </template>
                             </el-input>
                         </div>
-                        <div class="form-item size-half">
+                        <div class="form-item size-half" v-if="!state.product.variants?.length">
                             <label for="product-quantity">Quantidade em estoque</label>
                             <el-input id="product-quantity" type="number" placeholder="Ex: 50" v-model="state.product.quantity"/>
                         </div>
+                        <div class="form-item size-half" v-else>
+                          <label>Estoque total</label>
+                          <span class="total-quantity">{{ totalVariantQuantity }} unidades</span>
+                        </div>
                     </div>
+
+                      <div class="variants-section">
+                        <div class="variants-heading">
+                          <label>Variações / tamanhos</label>
+                          <el-button size="small" @click="addVariant">+ Adicionar</el-button>
+                        </div>
+                        <div v-for="(variant, index) in state.product.variants || []" :key="index" class="variant-row">
+                          <el-input v-model="variant.name" placeholder="Ex: M" />
+                          <el-input v-model.number="variant.quantity" type="number" min="0" placeholder="Estoque" />
+                          <el-button type="danger" text @click="removeVariant(index)">Remover</el-button>
+                        </div>
+                        <span class="field-hint">Use variações quando o produto tiver tamanhos, cores ou estoques separados.</span>
+                      </div>
                     
                     <div class="form-item">
                         <label for="product-description">Descrição do produto</label> 
@@ -93,7 +115,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Product } from "~/types/Product";
+import type { Product, ProductVariant } from "~/types/Product";
 import { Plus } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import type { UploadFile } from "element-plus";
@@ -116,6 +138,8 @@ const state = reactive({
     description: "",
     image: "",
     published: true,
+    category: "",
+    variants: [] as ProductVariant[],
   } as unknown as Product,
   isNew: true,
 });
@@ -158,6 +182,9 @@ const handleSave = async () => {
 
     const body = {
       ...state.product,
+      quantity: state.product.variants?.length
+        ? totalVariantQuantity.value
+        : state.product.quantity,
       price: state.isNew
         ? Math.round(state.product.price * 100)   // novo: converte reais → centavos
         : state.product.price,                     // edição: já está em centavos
@@ -196,6 +223,19 @@ const displayPrice = computed({
   get: () => state.isNew ? state.product.price : state.product.price / 100,
   set: (val) => { state.product.price = state.isNew ? val : val * 100 }
 })
+
+const totalVariantQuantity = computed(() =>
+  (state.product.variants || []).reduce((total, variant) => total + (Number(variant.quantity) || 0), 0)
+)
+
+function addVariant() {
+  if (!state.product.variants) state.product.variants = []
+  state.product.variants.push({ name: '', quantity: 0 })
+}
+
+function removeVariant(index: number) {
+  state.product.variants?.splice(index, 1)
+}
 </script>
 
 <style lang="css" scoped>
@@ -320,6 +360,42 @@ const displayPrice = computed({
 .form-row {
   display: flex;
   gap: 1.25rem;
+}
+
+.variants-section {
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--store-color, #7A1F2E) 12%, transparent);
+  background: color-mix(in srgb, var(--store-color, #7A1F2E) 3%, #fff);
+}
+
+.variants-heading,
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.variants-heading {
+  justify-content: space-between;
+  margin-bottom: .75rem;
+}
+
+.variant-row {
+  margin-bottom: .6rem;
+}
+
+.variant-row .el-input:first-child {
+  flex: 1;
+}
+
+.variant-row .el-input:nth-child(2) {
+  width: 150px;
+}
+
+.field-hint,
+.total-quantity {
+  color: #777;
+  font-size: .78rem;
 }
 
 .size-half {

@@ -11,9 +11,17 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, price, quantity, description, active, image, store } = body
+  const { name, price, quantity, description, active, image, store, category, variants = [] } = body
+  const normalizedVariants = Array.isArray(variants)
+    ? variants
+      .map((variant: any) => ({ name: String(variant.name || '').trim(), quantity: Number(variant.quantity) || 0 }))
+      .filter((variant: { name: string }) => variant.name)
+    : []
+  const totalQuantity = normalizedVariants.length
+    ? normalizedVariants.reduce((total: number, variant: { quantity: number }) => total + variant.quantity, 0)
+    : Number(quantity)
 
-  if (!name || !price || !quantity || !description || !image) {
+  if (!name || !price || totalQuantity < 0 || !description || !image) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Todos os campos obrigatórios devem ser preenchidos.',
@@ -55,7 +63,9 @@ export default defineEventHandler(async (event) => {
       name,
       store,
       price,
-      quantity,
+      quantity: totalQuantity,
+      category: String(category || '').trim(),
+      variants: normalizedVariants,
       description,
       active,
       image: cdnImg.url || '',

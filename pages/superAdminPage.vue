@@ -33,14 +33,18 @@
         <div class="panel-heading"><h2>Lojas</h2><span>{{ stores.length }} carregadas</span></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Loja</th><th>Responsável</th><th>URL</th><th>Status</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Loja</th><th>Responsável</th><th>URL</th><th>Aprovação</th><th>Ação</th></tr></thead>
             <tbody>
               <tr v-for="store in stores" :key="store._id" :style="{ '--row-color': store.color || '#7A1F2E' }">
                 <td><strong class="store-name"><i></i>{{ store.name }}</strong></td>
                 <td><span>{{ store.owner?.name || 'Sem responsável' }}</span><small>{{ store.owner?.email || '-' }}</small></td>
                 <td>/{{ store.store }}</td>
-                <td><span :class="['status', store.active === false ? 'inactive' : 'active']">{{ store.active === false ? 'Inativa' : 'Ativa' }}</span></td>
-                <td><button class="row-action" type="button" @click="toggleStore(store)">{{ store.active === false ? 'Ativar' : 'Desativar' }}</button></td>
+                <td><span :class="['status', `approval-${store.approvalStatus || 'approved'}`]">{{ approvalLabel(store.approvalStatus) }}</span></td>
+                <td class="actions-cell">
+                  <button v-if="store.approvalStatus !== 'approved'" class="row-action approve" type="button" @click="updateApproval(store, 'approved')">Aprovar</button>
+                  <button v-if="store.approvalStatus !== 'rejected'" class="row-action reject" type="button" @click="updateApproval(store, 'rejected')">Recusar</button>
+                  <button v-if="store.approvalStatus === 'approved'" class="row-action" type="button" @click="updateApproval(store, 'pending')">Suspender</button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -139,10 +143,17 @@ async function changeSection(nextSection: typeof section.value) {
   if (nextSection === 'orders') await loadOrders()
 }
 
-async function toggleStore(store: ManagedStore) {
-  const active = store.active === false
-  await $fetch('/api/store/updateActive', { method: 'PATCH', body: { storeId: store._id, active } })
-  store.active = active
+async function updateApproval(store: ManagedStore, approvalStatus: 'approved' | 'rejected' | 'pending') {
+  await $fetch('/api/store/updateApproval', {
+    method: 'PATCH',
+    body: { storeId: store._id, approvalStatus },
+  })
+  store.approvalStatus = approvalStatus
+  store.active = approvalStatus === 'approved'
+}
+
+function approvalLabel(status?: Store['approvalStatus']) {
+  return status === 'approved' ? 'Aprovada' : status === 'rejected' ? 'Recusada' : 'Pendente'
 }
 
 function formatPrice(value: number) {
@@ -187,5 +198,11 @@ td small { display: block; margin-top: 3px; color: #756c66; font-size: .75rem; }
 .status { display: inline-block; padding: 4px 9px; font-size: .75rem; text-transform: capitalize; }
 .status.active { color: #2d7a3a; background: #e8f5e9; }
 .status.inactive { color: #777; background: #eee; }
+.status.approval-pending { color: #8a5a00; background: #fff4d6; }
+.status.approval-approved { color: #2d7a3a; background: #e8f5e9; }
+.status.approval-rejected { color: #a12b37; background: #fde8e8; }
+.actions-cell { display: flex; gap: 6px; }
+.row-action.approve { border-color: #2d7a3a; color: #2d7a3a; }
+.row-action.reject { border-color: #a12b37; color: #a12b37; }
 @media (max-width: 800px) { .super-header, .toolbar { align-items: flex-start; flex-direction: column; } .tabs { width: 100%; overflow-x: auto; } .toolbar select { width: 100%; } .panel { padding: 14px; } }
 </style>
