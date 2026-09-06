@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     getUser: state => state.user,
     getCart: state => state.cart,
-    getCommunity: state => state.community,
+    getStore: state => state.store,
     isAuthenticated: state => state.user !== null,
     isAdmin: state => state.user?.kind === 'admin',
   },
