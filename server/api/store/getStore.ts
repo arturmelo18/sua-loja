@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const rawCommunity = String(query.community || '').trim()
     const community = rawCommunity.replace(/^@/, '')
 
-    const filter = community ? { community } : {}
+    const filter = store ? { store } : {}
     const store = await StoreSchema.findOne(filter).lean()
 
     return store ?? null
