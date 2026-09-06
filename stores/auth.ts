@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
     },
     setStore(store: String) {
-      this.community = community
+      this.store = store
     },
     clearCommunity() {
       this.community = null
