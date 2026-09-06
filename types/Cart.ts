@@ -3,7 +3,7 @@ import type { User } from "./User";
 
 export interface Cart {
     _id: string
-    community: string
+    store: string
     user: User
     items: CartItem[]
     createdAt: Date
