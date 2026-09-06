@@ -10,7 +10,7 @@ export const OrderSchema = defineMongooseModel<Order>({
       ref: 'User',
       required: true,
     },
-    community: {
+    store: {
       type: String,
       required: true
     },
