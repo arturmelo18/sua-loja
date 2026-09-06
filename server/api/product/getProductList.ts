@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const filter: any = { published: true }
 
   if (store) {
-    filter.community = community
+    filter.store = store
   }
 
   try {
