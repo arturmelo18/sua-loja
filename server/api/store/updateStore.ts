@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const { name, store, slides } = await readBody(event)
     const normalizedStore = String(store || '').trim().replace(/^@/, '').toLowerCase()
 
-    if (!name || !normalizedCommunity || !slides?.length) {
+    if (!name || !normalizedStore || !slides?.length) {
         throw createError({ statusCode: 400, statusMessage: 'name, community e slides são obrigatórios' })
     }
 
