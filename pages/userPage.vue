@@ -1,5 +1,5 @@
 <template>
-    <div class="page-wrapper-admin">
+    <div class="page-wrapper-admin" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
         <header class="admin-top-nav">
             <NavBar></NavBar>
         </header>
@@ -118,11 +118,14 @@ const state = reactive({
 })
 
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false)
 
 onMounted(() => {
     const user = authStore.getUser
     if (!user) return
+
+  loadStoreTheme({ ownerId: user._id })
 
     state._id = user._id
     state.name = user.name
@@ -250,7 +253,7 @@ definePageMeta({ middleware: 'auth' })
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 28px;
   font-weight: 600;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin: 0;
 }
 
@@ -279,7 +282,7 @@ definePageMeta({ middleware: 'auth' })
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;
   font-weight: 600;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin-bottom: 0.5rem;
   display: block;
   width: 100%;
@@ -313,8 +316,8 @@ definePageMeta({ middleware: 'auth' })
 }
 
 .btn-primary {
-  background-color: #4a0f01 !important;
-  border-color: #4a0f01 !important;
+  background-color: var(--store-color, #7A1F2E) !important;
+  border-color: var(--store-color, #7A1F2E) !important;
   color: #ffffff !important;
   font-weight: 500;
   border-radius: 6px;
@@ -330,7 +333,7 @@ definePageMeta({ middleware: 'auth' })
 .btn-secondary {
   background-color: transparent !important;
   border-color: rgba(74, 15, 1, 0.2) !important;
-  color: #4a0f01 !important;
+  color: var(--store-color, #7A1F2E) !important;
   font-weight: 500;
   border-radius: 6px;
   padding: 10px 20px;
@@ -338,7 +341,7 @@ definePageMeta({ middleware: 'auth' })
 
 .btn-secondary:hover {
   background-color: rgba(74, 15, 1, 0.04) !important;
-  border-color: #4a0f01 !important;
+  border-color: var(--store-color, #7A1F2E) !important;
 }
 
 :deep(.el-input__wrapper) {
@@ -350,7 +353,7 @@ definePageMeta({ middleware: 'auth' })
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #4a0f01 inset, 0 0 0 3px rgba(74, 15, 1, 0.08) !important;
+  box-shadow: 0 0 0 1px var(--store-color, #7A1F2E) inset, 0 0 0 3px color-mix(in srgb, var(--store-color, #7A1F2E) 10%, transparent) !important;
   background-color: #ffffff;
 }
 

@@ -31,5 +31,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return user
+  const safeUser = user.toObject()
+  delete safeUser.password
+
+  return safeUser
 })

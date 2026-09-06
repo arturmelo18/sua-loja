@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrapper">
+  <div class="page-wrapper" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
     <NavBar />
 
     <main class="orders-main">
@@ -67,10 +67,12 @@
 import type { Order } from '~/types/Order'
 
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false)
 const orders = ref<Order[]>([])
 
 onMounted(async () => {
+  await loadStoreTheme({ ownerId: authStore.getUser?._id })
   isLoading.value = true
   try {
     orders.value = await $fetch<Order[]>('/api/order/listMyOrders', {
@@ -121,7 +123,7 @@ definePageMeta({ middleware: 'auth' })
   font-size: 38px;
   font-weight: 300;
   font-style: italic;
-  color: var(--black);
+  color: var(--store-color, #7A1F2E);
   margin-bottom: 2rem;
 }
 

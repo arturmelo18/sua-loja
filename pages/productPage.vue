@@ -1,5 +1,5 @@
 <template>
-    <div class="page-wrapper">
+    <div class="page-wrapper" :style="{ '--store-color': storeColor }">
         <header class="custom-header">
             <div class="header-content">
                 <h1>{{ state.isNew ? 'Novo Produto' : 'Editar Produto' }}</h1>
@@ -81,7 +81,7 @@
                         </div>
                         <div class="switch-container">
                             <span class="switch-status-text">{{ state.product.published ? 'Ativo na loja' : 'Oculto na loja' }}</span>
-                            <el-switch id="product-active" v-model="state.product.published" style="--el-switch-on-color: #4a0f01;"/>
+                            <el-switch id="product-active" v-model="state.product.published" :style="{ '--el-switch-on-color': storeColor }"/>
                         </div>
                     </div>
                 </div>
@@ -99,6 +99,8 @@ import { ElMessage } from "element-plus";
 import type { UploadFile } from "element-plus";
 
 const route = useRoute();
+const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false);
 const selectedFile = ref<File | null>(null);
 
@@ -128,6 +130,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 onMounted(async () => {
+  await loadStoreTheme({ ownerId: authStore.user?._id })
     if (!route.query._id) return
     state.isNew = false
     try {
@@ -213,7 +216,7 @@ const displayPrice = computed({
 .custom-header {
   background-color: #ffffff;
   padding: 1.25rem 0;
-  border-bottom: 1px solid rgba(74, 15, 1, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--store-color, #7A1F2E) 10%, transparent);
 }
 
 .header-content {
@@ -230,7 +233,7 @@ const displayPrice = computed({
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 26px;
   font-weight: 600;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -242,8 +245,8 @@ const displayPrice = computed({
 
 /* Botões */
 .btn-primary {
-  background-color: #4a0f01 !important;
-  border-color: #4a0f01 !important;
+  background-color: var(--store-color, #7A1F2E) !important;
+  border-color: var(--store-color, #7A1F2E) !important;
   color: #ffffff !important;
   font-weight: 500;
   border-radius: 6px;
@@ -252,22 +255,22 @@ const displayPrice = computed({
 }
 
 .btn-primary:hover {
-  background-color: #631402 !important;
-  border-color: #631402 !important;
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 82%, #000) !important;
+  border-color: color-mix(in srgb, var(--store-color, #7A1F2E) 82%, #000) !important;
 }
 
 .btn-secondary {
   background-color: transparent !important;
-  border-color: rgba(74, 15, 1, 0.2) !important;
-  color: #4a0f01 !important;
+  border-color: color-mix(in srgb, var(--store-color, #7A1F2E) 24%, transparent) !important;
+  color: var(--store-color, #7A1F2E) !important;
   font-weight: 500;
   border-radius: 6px;
   padding: 10px 20px;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(74, 15, 1, 0.04) !important;
-  border-color: #4a0f01 !important;
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 5%, transparent) !important;
+  border-color: var(--store-color, #7A1F2E) !important;
 }
 
 /* Alinhamento unificado do Grid */
@@ -286,7 +289,7 @@ const displayPrice = computed({
   background-color: #ffffff;
   padding: 3rem;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(74, 15, 1, 0.02);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--store-color, #7A1F2E) 3%, transparent);
 }
 
 .image-column {
@@ -307,10 +310,10 @@ const displayPrice = computed({
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;
   font-weight: 600;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin-bottom: 0.5rem;
   display: block;
-  border-bottom: 1px solid rgba(74, 15, 1, 0.08);
+  border-bottom: 1px solid color-mix(in srgb, var(--store-color, #7A1F2E) 12%, transparent);
   padding-bottom: 0.5rem;
 }
 
@@ -345,7 +348,7 @@ const displayPrice = computed({
 }
 
 :deep(.el-input__wrapper.is-focus), :deep(.el-textarea__inner:focus) {
-  box-shadow: 0 0 0 1px #4a0f01 inset, 0 0 0 3px rgba(74, 15, 1, 0.08) !important;
+  box-shadow: 0 0 0 1px var(--store-color, #7A1F2E) inset, 0 0 0 3px color-mix(in srgb, var(--store-color, #7A1F2E) 10%, transparent) !important;
   background-color: #ffffff;
 }
 
@@ -365,7 +368,7 @@ const displayPrice = computed({
   background-color: #fbf9f6;
   padding: 1.25rem;
   border-radius: 8px;
-  border: 1px solid rgba(74, 15, 1, 0.06); /* Removido o tracejado amador */
+  border: 1px solid color-mix(in srgb, var(--store-color, #7A1F2E) 10%, transparent); /* Removido o tracejado amador */
   margin-top: 0.5rem;
 }
 
@@ -376,15 +379,15 @@ const displayPrice = computed({
 }
 
 .label-with-help label {
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   font-size: 14px;
   font-weight: 600;
   margin: 0;
 }
 
 .help-icon {
-  background-color: rgba(74, 15, 1, 0.06);
-  color: #4a0f01;
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 8%, transparent);
+  color: var(--store-color, #7A1F2E);
   width: 18px;
   height: 18px;
   display: flex;
@@ -409,7 +412,7 @@ const displayPrice = computed({
 
 /* Área de Upload */
 .avatar-uploader :deep(.el-upload) {
-  border: 1px dashed rgba(74, 15, 1, 0.2);
+  border: 1px dashed color-mix(in srgb, var(--store-color, #7A1F2E) 24%, transparent);
   border-radius: 8px;
   cursor: pointer;
   position: relative;
@@ -422,8 +425,8 @@ const displayPrice = computed({
 }
 
 .avatar-uploader :deep(.el-upload:hover) {
-  border-color: #4a0f01;
-  background-color: rgba(74, 15, 1, 0.01);
+  border-color: var(--store-color, #7A1F2E);
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 2%, transparent);
 }
 
 .uploader-placeholder {
@@ -442,7 +445,7 @@ const displayPrice = computed({
 
 .avatar-uploader-icon {
   font-size: 28px;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin-bottom: 0.75rem;
   opacity: 0.6;
 }
@@ -450,7 +453,7 @@ const displayPrice = computed({
 .upload-text {
   font-size: 13px;
   font-weight: 500;
-  color: #4a0f01;
+  color: var(--store-color, #7A1F2E);
   margin-bottom: 0.25rem;
 }
 
@@ -479,7 +482,7 @@ const displayPrice = computed({
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(74, 15, 1, 0.65);
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 65%, transparent);
   color: #ffffff;
   display: flex;
   flex-direction: column;

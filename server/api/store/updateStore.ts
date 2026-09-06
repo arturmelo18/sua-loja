@@ -1,4 +1,5 @@
 import { StoreSchema } from '~/server/models/store'
+import { UserSchema } from '~/server/models/user'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
@@ -27,9 +28,14 @@ export default defineEventHandler(async (event) => {
 
         const store = await StoreSchema.findOneAndUpdate(
             { ownerId: String(ownerId) },
-            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides },
+            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides, active: true },
             { new: true, upsert: true }
         )
+
+        await UserSchema.findByIdAndUpdate(String(ownerId), {
+            kind: 'admin',
+            store: normalizedStore,
+        })
 
         return store
     } catch (e) {

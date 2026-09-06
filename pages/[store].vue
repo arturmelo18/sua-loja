@@ -11,13 +11,6 @@
     </div>
 
     <div v-else class="store-page">
-      <div class="store-hero">
-        <div class="store-hero__content">
-          <p class="store-tag">Loja</p>
-          <h1>{{ store.name }}</h1>
-        </div>
-      </div>
-
       <div v-if="slides.length > 0" class="hero">
         <div class="carousel" id="carousel">
           <div
@@ -44,7 +37,7 @@
         </div>
 
         <div v-if="products.length === 0 && !isLoadingProducts" class="flex justify-center">
-          <img src="~/imgs/no_products.png" class="w-[800px] h-[400px]">
+          <empty-products-state />
         </div>
 
         <div v-else-if="!isLoadingProducts" class="products-grid" v-infinite-scroll="nextPage">
@@ -163,31 +156,6 @@ watch(
 
 .store-page {
   min-height: 100vh;
-}
-
-.store-hero {
-  background: linear-gradient(135deg, var(--store-color) 0%, color-mix(in srgb, var(--store-color) 68%, #000) 100%);
-  color: white;
-  padding: 48px 24px 32px;
-}
-
-.store-hero__content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.store-tag {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.8;
-  margin-bottom: 8px;
-}
-
-.store-hero h1 {
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  font-weight: 700;
-  margin: 0;
 }
 
 .hero {

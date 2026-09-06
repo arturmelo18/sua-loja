@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-cream">
+  <div class="h-screen w-screen bg-cream checkout-theme" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
     <NavBar />
 
     <div class="checkout-wrapper">
@@ -49,6 +49,7 @@
 import type { CartItem } from '~/types/Cart'
 
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false)
 
 const user = computed(() => authStore.getUser)
@@ -62,6 +63,8 @@ const total = computed(() =>
 
 const formatPrice = (value: number) =>
   (value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+onMounted(() => loadStoreTheme({ ownerId: authStore.getUser?._id }))
 
 async function goToPayment() {
   if (!cart.value?._id || !user.value?._id) {
@@ -96,6 +99,15 @@ definePageMeta({ middleware: 'auth' })
 
 <style scoped>
 .bg-cream { background: #F2EDE6; }
+
+.checkout-theme :deep(.btn-dark),
+.checkout-theme :deep(.btn-outline) {
+  border-color: var(--store-color, #7A1F2E);
+}
+
+.checkout-theme :deep(.btn-dark) {
+  background: var(--store-color, #7A1F2E);
+}
 
 /* ===== WRAPPER (mobile first) ===== */
 .checkout-wrapper {
@@ -176,7 +188,7 @@ definePageMeta({ middleware: 'auth' })
   font-size: 15px;
 }
 
-.total-value { color: #4a0f01; font-size: 17px; }
+.total-value { color: var(--store-color, #7A1F2E); font-size: 17px; }
 
 .delivery-info {
   background: #F2EDE6;

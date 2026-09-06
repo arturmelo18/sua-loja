@@ -11,7 +11,7 @@ export const UserSchema = defineMongooseModel<User>({
     },
     store: {
       type: String,
-      required: true,
+      required: false,
       default: ''
     },
     email: {
@@ -23,10 +23,23 @@ export const UserSchema = defineMongooseModel<User>({
       type: String,
       required: true,
     },
+    recoveryCodeHash: {
+      type: String,
+      select: false,
+    },
+    recoveryCodeExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    recoveryCodeAttempts: {
+      type: Number,
+      select: false,
+      default: 0,
+    },
     kind: {
       type: String,
       required: true,
-      enum: ['admin', 'user'],
+      enum: ['admin', 'user', 'superadmin'],
     },
     address: {
       type: AddressSchema,

@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     name,
     minPrice,
     maxPrice,
+    store,
     limit,
     page,
   } = body
@@ -22,6 +23,10 @@ export default defineEventHandler(async (event) => {
   const skip = page > 0 ? (page - 1) * safeLimit : safeLimit
 
   const filter: any = {}
+
+  if (store) {
+    filter.store = String(store).replace(/^@/, '').toLowerCase()
+  }
 
   if (name) {
     filter.name = { $regex: String(name), $options: 'i' }

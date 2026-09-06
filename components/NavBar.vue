@@ -1,11 +1,11 @@
 <template>
   <nav class="navbar">
     <div class="nav-logo flex flex-wrap">
-      <nuxt-link to="/">{{ storeName }}</nuxt-link>
+      <nuxt-link :to="storePath">{{ storeName }}</nuxt-link>
     </div>
 
     <ul class="nav-links" id="nav-links-desktop">
-      <li><nuxt-link to="/">Todos os produtos</nuxt-link></li>
+      <li><nuxt-link :to="storePath">Todos os produtos</nuxt-link></li>
     </ul>
 
     <div class="nav-actions">
@@ -19,7 +19,7 @@
         </el-button>
         <template #dropdown>
           <el-dropdown-menu class="flex flex-col items-start" v-if="authStore.getUser">
-            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo('/')">
+            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
               <i class="uil uil-apps"></i>
               <span>Todos os produtos</span>
             </el-dropdown-item>
@@ -31,7 +31,7 @@
               <i class="uil uil-shopping-bag"></i>
               <span>Meus pedidos</span>
             </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/adminPage')" v-if="isAdmin && !isMobile">
+            <el-dropdown-item class="w-full" @click="navigateTo(adminPath)" v-if="isAdmin && !isMobile">
               <i class="uil uil-setting"></i>
               <span>Área do administrador</span>
             </el-dropdown-item>
@@ -41,7 +41,7 @@
             </el-dropdown-item>
           </el-dropdown-menu>
           <el-dropdown-menu class="flex flex-col items-start" v-else>
-            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo('/')">
+            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
               <i class="uil uil-apps"></i>
               <span>Todos os produtos</span>
             </el-dropdown-item>
@@ -58,8 +58,11 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
+const route = useRoute()
 const storeName = ref('Fatecano')
 const isMobile = ref(false)
+const storeSlug = computed(() => String(route.params.store || authStore.getUser?.store || '').replace(/^@/, ''))
+const storePath = computed(() => storeSlug.value ? `/${storeSlug.value}` : '/')
 
 function updateIsMobile() {
   isMobile.value = window.innerWidth <= 768
@@ -70,7 +73,9 @@ onMounted(async () => {
   window.addEventListener('resize', updateIsMobile)
 
   try {
-    const store = await $fetch<any>('/api/store/getStore')
+    const store = await $fetch<any>('/api/store/getStore', {
+      params: storeSlug.value ? { store: storeSlug.value } : undefined,
+    })
     if (store?.name) storeName.value = store.name
   } catch {
     // mantém o fallback 'Fatecano'
@@ -88,8 +93,10 @@ const logout = () => {
 }
 
 const isAdmin = computed(() => {
-  return authStore.getUser?.kind == 'admin'
+  return authStore.isAdmin
 })
+
+const adminPath = computed(() => authStore.isSuperAdmin ? '/superAdminPage' : '/adminPage')
 </script>
 
 <style scoped>
@@ -105,7 +112,7 @@ nav a {
 
 :deep(.el-dropdown-menu__item:hover) {
   background-color: transparent;
-  color: var(--burgundy);
+  color: var(--store-color, #7A1F2E);
 }
 
 /* ===== NAVBAR (mobile first) ===== */
@@ -123,6 +130,15 @@ nav a {
   font-weight: 500;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.nav-logo a {
+  color: var(--store-color, #7A1F2E);
+}
+
+.nav-links a:hover,
+.nav-actions :deep(.el-button:hover) {
+  color: var(--store-color, #7A1F2E);
 }
 
 /* Links de navegação horizontal: escondidos no mobile, aparecem no dropdown */
@@ -147,6 +163,7 @@ nav a {
 
 .nav-actions i {
   font-size: 1.15rem;
+  color: var(--store-color, #7A1F2E);
 }
 
 /* Item "Todos os produtos" só aparece no dropdown mobile */

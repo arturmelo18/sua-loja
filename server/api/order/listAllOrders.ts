@@ -1,7 +1,7 @@
 import { OrderSchema } from '~/server/models/order'
 
 export default defineEventHandler(async (event) => {
-    const { page = 1, limit = 10, search = '' } = getQuery(event)
+    const { page = 1, limit = 10, search = '', store = '' } = getQuery(event)
 
     const skip = (Number(page) - 1) * Number(limit)
 
@@ -78,6 +78,8 @@ export default defineEventHandler(async (event) => {
                 },
             },
         },
+
+        ...(store ? [{ $match: { 'productsData.store': String(store).replace(/^@/, '').toLowerCase() } }] : []),
 
         { $unset: 'productsData' },
 

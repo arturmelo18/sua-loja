@@ -28,10 +28,13 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     return {
       statusCode: 200,
       message: "Usuário atualizado com sucesso!",
-      user,
+      user: safeUser,
     };
   } catch (error: any) {
     if (error.statusCode) throw error;

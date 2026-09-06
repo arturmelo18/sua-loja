@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-cream">
+  <div class="h-screen w-screen bg-cream product-theme" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
     <NavBar />
 
     <div class="modal-overlay open">
@@ -12,7 +12,7 @@
             :src="imgSrc"
             :alt="state.product.name"
           />
-          <i v-else class="uil uil-shopping-bag" style="font-size:48px;opacity:0.2;color:#1A1A1A;"></i>
+          <i v-else class="uil uil-shopping-bag product-placeholder"></i>
         </div>
 
         <div class="modal-body-side">
@@ -65,6 +65,7 @@ import type { Product } from '~/types/Product'
 const route = useRoute()
 const authStore = useAuthStore()
 const isAdding = ref(false)
+const { storeColor, loadStoreTheme } = useStoreTheme()
 
 const state = reactive({
   product: {} as Product,
@@ -89,6 +90,7 @@ onMounted(async () => {
       method: 'GET',
       params: { _id: route.query._id },
     })
+    await loadStoreTheme({ storeSlug: state.product.store })
   } catch {
     ElMessage.error('Erro ao carregar produto')
   }
@@ -127,6 +129,17 @@ async function addToCart() {
 
 <style scoped>
 .bg-cream { background: #F2EDE6; }
+
+.product-placeholder {
+  color: var(--store-color, #7A1F2E);
+  font-size: 48px;
+  opacity: 0.2;
+}
+
+.product-theme :deep(.btn-dark) {
+  background: var(--store-color, #7A1F2E);
+  border-color: var(--store-color, #7A1F2E);
+}
 
 /* ===== MODAL BASE (mobile first) ===== */
 .product-modal-box {

@@ -41,6 +41,9 @@
           <span class="text-sm text-gray-600">Não tem conta? </span>
           <nuxt-link to="/createUser" class="text-burgundy font-semibold">Criar agora</nuxt-link>
         </div>
+        <div class="text-center recovery-link">
+          <nuxt-link to="/forgotPassword" class="text-burgundy font-semibold">Esqueci minha senha</nuxt-link>
+        </div>
       </div>
     </div>
   </div>

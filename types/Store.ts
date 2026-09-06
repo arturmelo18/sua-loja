@@ -11,6 +11,7 @@ export interface Store {
     store: string
     name: string
     color?: string
+    active: boolean
     slides: StoreSlide[]
     createdAt: Date
     updatedAt: Date

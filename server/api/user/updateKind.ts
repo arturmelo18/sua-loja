@@ -10,10 +10,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (!['admin', 'user'].includes(kind)) {
+  if (!['admin', 'user', 'superadmin'].includes(kind)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'kind deve ser "admin" ou "user"',
+      statusMessage: 'kind deve ser "admin", "user" ou "superadmin"',
     })
   }
 
