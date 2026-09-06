@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
   try {
     return await UserSchema.create({
       name,
-      community,
+      store,
       email,
       password: hashedPassword,
       // TODO: mudar isso quando a tela de administrador for criada
