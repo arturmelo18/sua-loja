@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 
     const cart = await CartSchema.create({
       user: userId,
-      community,
+      store,
       items: [],
     })
 
