@@ -2,7 +2,7 @@ import type { Address } from './Address'
 
 export interface User {
   _id: string
-   store: string
+  store: string
   name: string
   email: string
   password: string

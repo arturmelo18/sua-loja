@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-cream">
+  <div class="h-screen w-screen bg-cream" :style="{ '--store-color': store?.color || '#7A1F2E' }">
     <nav-bar />
 
     <div v-if="isLoading" class="flex justify-center items-center h-[50vh]">
@@ -166,7 +166,7 @@ watch(
 }
 
 .store-hero {
-  background: linear-gradient(135deg, #7A1F2E 0%, #b93f58 100%);
+  background: linear-gradient(135deg, var(--store-color) 0%, color-mix(in srgb, var(--store-color) 68%, #000) 100%);
   color: white;
   padding: 48px 24px 32px;
 }
@@ -258,7 +258,7 @@ watch(
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  background: rgba(255,255,255,0.25);
+  background: color-mix(in srgb, var(--store-color) 72%, transparent);
   color: #fff;
   border: none;
   width: 32px;

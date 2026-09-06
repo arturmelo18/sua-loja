@@ -307,6 +307,13 @@
                 </span>
                 <el-input v-model="storeForm.store" placeholder="Ex: fatecano" />
               </label>
+
+              <label class="filter-group" style="display:flex;flex-direction:column;gap:4px;margin-top:1rem;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#6B6B6B;font-weight:500;">
+                  Cor da loja
+                </span>
+                <el-color-picker v-model="storeForm.color" />
+              </label>
             </div>
 
             <div style="margin-bottom: 1rem;">
@@ -388,6 +395,8 @@
 </template>
 
 <script setup lang="ts">
+const authStore = useAuthStore()
+
 import { Chart, registerables } from 'chart.js'
 import type { Order } from '~/types/Order'
 import type { Product } from '~/types/Product'
@@ -749,6 +758,7 @@ const isSavingStore  = ref(false)
 const storeForm = reactive({
   name: '',
   store: '',
+  color: '#7A1F2E',
   slides: [] as StoreSlide[],
 })
 
@@ -759,11 +769,13 @@ async function loadStore() {
     if (store) {
       storeForm.name      = store.name
       storeForm.store = store.store || ''
+      storeForm.color = store.color || '#7A1F2E'
       storeForm.slides    = store.slides
     } else {
       // default se não existir ainda
       storeForm.name      = 'Fatecano'
       storeForm.store = 'fatecano'
+      storeForm.color = '#7A1F2E'
       storeForm.slides    = [{ title: '', description: '', image: '' }]
     }
   } catch {
@@ -818,8 +830,10 @@ async function saveStore() {
     await $fetch('/api/store/updateStore', {
       method: 'PUT',
       body: {
+        ownerId: authStore.user?._id,
         name: storeForm.name,
         store: storeValue,
+        color: storeForm.color,
         slides: storeForm.slides,
       },
     })

@@ -7,8 +7,10 @@ export interface StoreSlide {
 
 export interface Store {
     _id: string
+    ownerId: string
     store: string
     name: string
+    color?: string
     slides: StoreSlide[]
     createdAt: Date
     updatedAt: Date

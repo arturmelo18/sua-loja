@@ -4,6 +4,11 @@ import type { Store } from '~/types/Store'
 export const StoreSchema = defineMongooseModel<Store>({
     name: 'Store',
     schema: {
+        ownerId: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         name: {
             type: String,
             required: true,
@@ -11,6 +16,10 @@ export const StoreSchema = defineMongooseModel<Store>({
         store: {
             type: String,
             required: true
+        },
+        color: {
+            type: String,
+            default: '#7A1F2E'
         },
         slides: [
             {

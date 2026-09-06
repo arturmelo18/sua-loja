@@ -177,7 +177,7 @@ async function createUser() {
 
     ElMessage.success('Usuário criado com sucesso!')
 
-    await navigateTo('/')
+    await navigateTo('/loginPage?next=/storeSettings')
   }
   catch (error: any) {
     ElMessage.error(error.data?.statusMessage || 'Erro ao criar usuário')
