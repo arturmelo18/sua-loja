@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
   const order = await OrderSchema.create({
     user: userId,
-    community,
+    store,
     items: cart.items.map((i: any) => i._id),
     total,
     status: 'PENDING',
