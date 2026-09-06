@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
   try {
     const product = await ProductSchema.create({
       name,
-      community,
+      store,
       price,
       quantity,
       description,
