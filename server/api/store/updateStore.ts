@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const normalizedStore = String(store || '').trim().replace(/^@/, '').toLowerCase()
 
     if (!name || !normalizedStore || !slides?.length) {
-        throw createError({ statusCode: 400, statusMessage: 'name, community e slides são obrigatórios' })
+        throw createError({ statusCode: 400, statusMessage: 'name, store e slides são obrigatórios' })
     }
 
     try {
