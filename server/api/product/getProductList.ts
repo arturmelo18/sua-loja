@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const limit = Number(query.limit) || 10
   const page = Number(query.page) || 1
   const rawStore = String(query.store || '').trim()
-  const community = rawCommunity.replace(/^@/, '')
+  const store = rawStore.replace(/^@/, '')
 
   const skip = (page - 1) * limit
   const filter: any = { published: true }
