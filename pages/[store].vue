@@ -3,17 +3,17 @@
     <nav-bar />
 
     <div v-if="isLoading" class="flex justify-center items-center h-[50vh]">
-      <span>Carregando comunidade...</span>
+      <span>Carregando loja...</span>
     </div>
 
     <div v-else-if="!store" class="flex justify-center items-center h-[50vh]">
-      <span>Comunidade não encontrada.</span>
+      <span>Loja não encontrada.</span>
     </div>
 
-    <div v-else class="community-page">
-      <div class="community-hero">
-        <div class="community-hero__content">
-          <p class="community-tag">Comunidade</p>
+    <div v-else class="store-page">
+      <div class="store-hero">
+        <div class="store-hero__content">
+          <p class="store-tag">Loja</p>
           <h1>{{ store.name }}</h1>
         </div>
       </div>
@@ -40,7 +40,7 @@
 
       <div class="section">
         <div class="section-header">
-          <h2 class="section-title">Produtos da comunidade</h2>
+          <h2 class="section-title">Produtos da loja</h2>
         </div>
 
         <div v-if="products.length === 0 && !isLoadingProducts" class="flex justify-center">
@@ -66,7 +66,7 @@ import type { Product } from '~/types/Product'
 import type { Store } from '~/types/Store'
 
 const route = useRoute()
-const community = computed(() => String(route.params.community || '').replace(/^@/, ''))
+const storeSlug = computed(() => String(route.params.store || '').replace(/^@/, ''))
 
 const isLoading = ref(true)
 const isLoadingProducts = ref(false)
@@ -82,7 +82,7 @@ async function loadStore() {
 
   try {
     const result = await $fetch<Store | null>('/api/store/getStore', {
-      params: { community: community.value }
+      params: { store: storeSlug.value }
     })
 
     store.value = result
@@ -96,7 +96,7 @@ async function loadStore() {
       }
     }
   } catch (error) {
-    console.error('Erro ao carregar comunidade:', error)
+    console.error('Erro ao carregar loja:', error)
     store.value = null
   } finally {
     isLoading.value = false
@@ -104,14 +104,14 @@ async function loadStore() {
 }
 
 async function loadProducts() {
-  if (!community.value) return
+  if (!storeSlug.value) return
 
   isLoadingProducts.value = true
 
   try {
     const result = await $fetch<{ data: Product[]; pagination: any }>('/api/product/getProductList', {
       params: {
-        community: community.value,
+        store: storeSlug.value,
         page: state.page,
         limit: state.limit,
       },
@@ -121,7 +121,7 @@ async function loadProducts() {
     state.total = result.pagination.total
     products.value = [...products.value, ...result.data]
   } catch (error) {
-    console.error('Erro ao carregar produtos da comunidade:', error)
+    console.error('Erro ao carregar produtos da loja:', error)
   } finally {
     isLoadingProducts.value = false
   }
@@ -144,7 +144,7 @@ function prevSlide() {
 }
 
 watch(
-  community,
+  storeSlug,
   async () => {
     products.value = []
     state.page = 1
@@ -161,22 +161,22 @@ watch(
   background: #F2EDE6;
 }
 
-.community-page {
+.store-page {
   min-height: 100vh;
 }
 
-.community-hero {
+.store-hero {
   background: linear-gradient(135deg, #7A1F2E 0%, #b93f58 100%);
   color: white;
   padding: 48px 24px 32px;
 }
 
-.community-hero__content {
+.store-hero__content {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.community-tag {
+.store-tag {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -184,7 +184,7 @@ watch(
   margin-bottom: 8px;
 }
 
-.community-hero h1 {
+.store-hero h1 {
   font-size: clamp(2rem, 4vw, 3.4rem);
   font-weight: 700;
   margin: 0;
