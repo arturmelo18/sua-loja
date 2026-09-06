@@ -58,6 +58,7 @@ const state = reactive({
 const isPasswordHidden = ref(false)
 const isLoading = ref(false)
 const authStore = useAuthStore()
+const route = useRoute()
 
 async function authUser() {
   if (!state.email || !state.password) {
@@ -94,7 +95,8 @@ async function authUser() {
 
     ElMessage.success('Autenticação realizada com sucesso!')
     
-    await navigateTo('/')
+    const nextPath = typeof route.query.next === 'string' ? route.query.next : '/'
+    await navigateTo(nextPath)
   }
   catch (error: any) {
     ElMessage.error(error.data?.statusMessage || 'Erro na autenticação')

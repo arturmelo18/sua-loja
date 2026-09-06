@@ -1,362 +1,427 @@
 <template>
-  <div class="h-screen w-screen bg-cream">
-    <nav-bar/>
-    
-    <div class="hero" v-if="slides.length > 0">
-      <div class="carousel" id="carousel">
-        <div 
-          v-for="(slide, index) in slides" 
-          :key="index"
-          :class="['carousel-slide', { active: currentSlide === index }]"
-        >
-          <div class="slide-bg" :style="{ backgroundImage: `url(${slide.image})` }"></div>
-          <div class="slide-overlay"></div>
-          <div class="slide-content">
-            <h1>{{ slide.title }}</h1>
-            <p>{{ slide.description }}</p>
+  <div class="landing-page">
+    <header class="landing-nav">
+      <button class="landing-brand" type="button" @click="navigateTo('/')">Sua Loja</button>
+      <nav class="landing-nav__links" aria-label="Navegação principal">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#loja-demo">Loja demo</a>
+      </nav>
+      <div class="landing-nav__actions">
+        <button class="landing-login" type="button" @click="navigateTo('/loginPage')">Entrar</button>
+        <button class="landing-create" type="button" @click="navigateTo('/createUser')">Criar minha loja</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="landing-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Sua loja, do seu jeito</p>
+          <h1>Crie um espaço que tenha a sua cara.</h1>
+          <p class="hero-description">
+            O Sua Loja ajuda você a transformar seus produtos em uma vitrine bonita,
+            simples de administrar e pronta para vender.
+          </p>
+          <div class="hero-actions">
+            <button class="primary-button" type="button" @click="navigateTo('/createUser')">
+              Criar minha loja
+            </button>
+            <button class="text-button" type="button" @click="navigateTo('/loginPage')">
+              Já tenho uma conta <span>→</span>
+            </button>
           </div>
         </div>
-      </div>
-      
-      <button class="carousel-btn prev" @click="prevSlide">‹</button>
-      <button class="carousel-btn next" @click="nextSlide">›</button>
-      
-      <div class="carousel-dots">
-        <button 
-          v-for="(_, index) in slides"
-          :key="index"
-          :class="['c-dot', { active: currentSlide === index }]"
-          @click="currentSlide = index"
-        ></button>
-      </div>
-    </div>
 
-    <!-- PRODUCTS SECTION -->
-    <div class="section">
-      <div class="section-header">
-        <h2 class="section-title">Novidades</h2>
-      </div>
-      <div v-if="state.products.length === 0 && !isLoading" class="flex justify-center">
-        <img src="../imgs/no_products.png" class="w-[800px] h-[400px]">
-      </div>
-      <div v-else-if="!isLoading" class="products-grid" v-infinite-scroll="nextPage">
-        <product-view v-for="product in state.products" :key="product._id" :product="product"/>
-      </div>
-      <div v-else class="flex justify-center">
-        <span>Carregando produtos...</span>
-      </div>
-    </div>
+        <div class="demo-window" aria-label="Prévia de uma loja criada no Sua Loja">
+          <div class="demo-window__bar">
+            <span></span><span></span><span></span>
+            <small>sualoja / amora</small>
+          </div>
+          <div class="demo-store-head">
+            <p>LOJA AMORA</p>
+            <strong>Peças para todos os seus dias.</strong>
+          </div>
+          <div class="demo-products">
+            <div v-for="product in demoProducts" :key="product.name" class="demo-product">
+              <div class="demo-product__image" :style="{ background: product.color }"></div>
+              <span>{{ product.name }}</span>
+              <strong>{{ product.price }}</strong>
+            </div>
+          </div>
+          <div class="demo-window__footer">Uma vitrine simples. Uma marca memorável.</div>
+        </div>
+      </section>
 
-    <lof-footer/>
+      <section id="como-funciona" class="steps-section">
+        <div class="section-intro">
+          <p class="eyebrow">Sem complicação</p>
+          <h2>Do primeiro nome à primeira venda.</h2>
+        </div>
+        <div class="steps-grid">
+          <article v-for="step in steps" :key="step.number" class="step-item">
+            <span>{{ step.number }}</span>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="loja-demo" class="demo-callout">
+        <div>
+          <p class="eyebrow">Loja demo</p>
+          <h2>Veja como sua vitrine pode começar.</h2>
+          <p>Escolha um nome, uma cor e conte ao mundo o que você faz.</p>
+        </div>
+        <button class="outline-button" type="button" @click="navigateTo('/createUser')">
+          Começar agora <span>↗</span>
+        </button>
+      </section>
+    </main>
+
+    <lof-footer />
   </div>
 </template>
 
 <script setup lang="ts">
-import GradientDivisor from '~/components/GradientDivisor.vue';
-import LofFooter from '~/components/LofFooter.vue';
-import type { Product } from '~/types/Product';
+const demoProducts = [
+  { name: 'Bolsa Mini', price: 'R$ 89,90', color: 'linear-gradient(135deg, #d98c72, #9e4b47)' },
+  { name: 'Caderno Terra', price: 'R$ 42,00', color: 'linear-gradient(135deg, #d8b875, #8d7650)' },
+  { name: 'Caneca Alma', price: 'R$ 36,90', color: 'linear-gradient(135deg, #9fb4aa, #4c716b)' },
+]
 
-const LIMIT = 20
-
-const currentSlide = ref(0)
-const slides = ref<{ title: string; description: string; image: string }[]>([])
-const storeName = ref('')
-
-const state = reactive({
-  page: 1,
-  total: 0,
-  products: <Product[]>[]
-})
-
-const isLoading = ref(false)
-
-onMounted(async () => {
-  try {
-    const store = await $fetch<any>('/api/store/getStore')
-    if (store) {
-      slides.value = store.slides
-      storeName.value = store.name
-    }
-  } catch {
-    // fallback vazio — carrossel não aparece
-  }
-
-  await fetchData()
-
-  if (slides.value.length > 1) {
-    setInterval(() => {
-      currentSlide.value = (currentSlide.value + 1) % slides.value.length
-    }, 5000)
-  }
-})
-
-async function fetchData() {
-  try {
-    isLoading.value = true
-    const result = await $fetch('/api/product/getProductList', {
-      method: 'GET',
-      params: {
-        page: state.page,
-        limit: LIMIT
-      }
-    })
-
-    state.page = result.pagination.page
-    state.total = result.pagination.total
-    state.products = [...state.products, ...result.data as Product[]]
-  } catch(error: any) {
-    ElMessage.error(error.message || 'Erro inesperado')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-function nextPage() {
-  if (state.page * LIMIT > state.total) return
-  state.page += 1
-  fetchData()
-}
-
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % slides.value.length
-}
-
-function prevSlide() {
-  currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length
-}
+const steps = [
+  { number: '01', title: 'Crie sua conta', description: 'Comece com seus dados e tenha seu espaço reservado.' },
+  { number: '02', title: 'Dê forma à loja', description: 'Escolha o nome, a cor e a apresentação da sua vitrine.' },
+  { number: '03', title: 'Publique e compartilhe', description: 'Sua loja ganha um endereço próprio para chegar aos clientes.' },
+]
 </script>
 
 <style scoped>
-.bg-cream {
-  background: #F2EDE6;
+.landing-page {
+  min-height: 100vh;
+  background: #f2ede6;
+  color: #201c1a;
 }
 
-/* ===== HERO / CAROUSEL (mobile first) ===== */
-.hero {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  overflow: hidden;
-}
-
-.carousel {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.carousel-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.6s ease;
-}
-
-.carousel-slide.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.slide-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-}
-
-.slide-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
-}
-
-.slide-content {
-  position: relative;
-  z-index: 2;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 16px;
-  color: #fff;
-}
-
-.slide-content h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.5rem;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-
-.slide-content p {
-  font-size: 0.85rem;
-  opacity: 0.9;
-  max-width: 100%;
-}
-
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  background: rgba(255,255,255,0.25);
-  color: #fff;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-size: 1.1rem;
+.landing-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(100% - 48px, 1240px);
+  margin: 0 auto;
+  padding: 22px 0;
+}
+
+.landing-brand,
+.landing-login,
+.landing-create {
+  border: 0;
   cursor: pointer;
-  backdrop-filter: blur(2px);
+  font: inherit;
 }
 
-.carousel-btn.prev { left: 8px; }
-.carousel-btn.next { right: 8px; }
-
-.carousel-dots {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  display: flex;
-  gap: 6px;
-}
-
-.c-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.5);
-  border: none;
+.landing-brand {
   padding: 0;
-  cursor: pointer;
-  transition: background 0.3s, width 0.3s;
-}
-
-.c-dot.active {
-  background: #7A1F2E;
-  width: 18px;
-  border-radius: 4px;
-}
-
-/* ===== SECTION ===== */
-.section {
-  padding: 24px 16px 40px;
-}
-
-.section-header {
-  margin-bottom: 16px;
-}
-
-.section-title {
+  color: #7a1f2e;
+  background: transparent;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.5rem;
-  color: #7A1F2E;
-  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
-/* ===== PRODUCTS GRID (mobile: 2 colunas) ===== */
-.products-grid {
+.landing-nav__links {
+  display: flex;
+  gap: 28px;
+  margin-left: auto;
+}
+
+.landing-nav__links a {
+  color: #635b56;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.landing-nav__links a:hover {
+  color: #7a1f2e;
+}
+
+.landing-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.landing-login {
+  padding: 10px 0;
+  color: #7a1f2e;
+  background: transparent;
+  font-weight: 700;
+}
+
+.landing-create {
+  padding: 11px 16px;
+  color: #fff;
+  background: #7a1f2e;
+  font-weight: 700;
+}
+
+.landing-hero {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+  align-items: center;
+  gap: clamp(32px, 7vw, 112px);
+  width: min(100% - 48px, 1240px);
+  min-height: 680px;
+  margin: 0 auto;
+  padding: 72px 0 88px;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: #7a1f2e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-copy h1 {
+  max-width: 600px;
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3.5rem, 7vw, 6.8rem);
+  font-weight: 600;
+  line-height: 0.86;
+}
+
+.hero-description {
+  max-width: 440px;
+  margin: 28px 0 0;
+  color: #635b56;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 32px;
+}
+
+.primary-button,
+.outline-button {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primary-button {
+  padding: 15px 22px;
+  color: #fff;
+  background: #7a1f2e;
+}
+
+.text-button {
+  border: 0;
+  padding: 0;
+  color: #7a1f2e;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.text-button span,
+.outline-button span {
+  margin-left: 5px;
+  font-size: 1.2em;
+}
+
+.demo-window {
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid rgba(32, 28, 26, 0.15);
+  background: #fbf7f1;
+  box-shadow: 24px 24px 0 #ded3c9;
+  transform: rotate(2deg);
+}
+
+.demo-window__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e3d9d0;
+}
+
+.demo-window__bar span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d98c72;
+}
+
+.demo-window__bar span:nth-child(2) { background: #d8b875; }
+.demo-window__bar span:nth-child(3) { background: #9fb4aa; }
+
+.demo-window__bar small {
+  margin-left: auto;
+  color: #948981;
+  font-size: 0.68rem;
+}
+
+.demo-store-head {
+  padding: 42px 32px 35px;
+  color: #fff;
+  background: linear-gradient(135deg, #7a1f2e, #b8565b);
+}
+
+.demo-store-head p {
+  margin: 0 0 14px;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+}
+
+.demo-store-head strong {
+  display: block;
+  max-width: 350px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.55rem;
+  font-weight: 600;
+  line-height: 0.95;
+}
+
+.demo-products {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  padding: 24px 24px 18px;
 }
 
-/* ===== TABLET (>= 640px) ===== */
-@media (min-width: 640px) {
-  .hero {
-    height: 340px;
-  }
-
-  .slide-content {
-    padding: 24px;
-  }
-
-  .slide-content h1 {
-    font-size: 2rem;
-  }
-
-  .slide-content p {
-    font-size: 0.95rem;
-    max-width: 70%;
-  }
-
-  .carousel-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 1.3rem;
-  }
-
-  .carousel-btn.prev { left: 16px; }
-  .carousel-btn.next { right: 16px; }
-
-  .section {
-    padding: 32px 24px 48px;
-  }
-
-  .section-title {
-    font-size: 1.75rem;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
+.demo-product {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.72rem;
 }
 
-/* ===== DESKTOP (>= 1024px) ===== */
-@media (min-width: 1024px) {
-  .hero {
-    height: 460px;
+.demo-product__image {
+  aspect-ratio: 0.8;
+  margin-bottom: 5px;
+}
+
+.demo-product strong { font-size: 0.75rem; }
+
+.demo-window__footer {
+  padding: 8px 24px 22px;
+  color: #948981;
+  font-size: 0.7rem;
+}
+
+.steps-section {
+  padding: 92px max(24px, calc((100% - 1240px) / 2)) 104px;
+  background: #fbf7f1;
+}
+
+.section-intro h2,
+.demo-callout h2 {
+  max-width: 520px;
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  font-weight: 600;
+  line-height: 0.92;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  margin-top: 64px;
+}
+
+.step-item {
+  padding-top: 18px;
+  border-top: 1px solid #cfc4ba;
+}
+
+.step-item span {
+  color: #7a1f2e;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.step-item h3 {
+  margin: 44px 0 10px;
+  font-size: 1.2rem;
+}
+
+.step-item p {
+  max-width: 250px;
+  margin: 0;
+  color: #756c66;
+  line-height: 1.55;
+}
+
+.demo-callout {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 100px max(24px, calc((100% - 1240px) / 2));
+  color: #fff;
+  background: #7a1f2e;
+}
+
+.demo-callout .eyebrow { color: #edc7bd; }
+.demo-callout h2 { margin-bottom: 18px; }
+
+.demo-callout p:not(.eyebrow) {
+  margin: 0;
+  color: #edc7bd;
+}
+
+.outline-button {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  color: #fff;
+  border: 1px solid #edc7bd;
+  background: transparent;
+}
+
+@media (max-width: 800px) {
+  .landing-nav__links { display: none; }
+
+  .landing-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: 64px 0 80px;
   }
 
-  .slide-content {
-    padding: 48px 64px;
-  }
-
-  .slide-content h1 {
-    font-size: 3rem;
-  }
-
-  .slide-content p {
-    font-size: 1.1rem;
-    max-width: 45%;
-  }
-
-  .carousel-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1.5rem;
-  }
-
-  .carousel-btn.prev { left: 32px; }
-  .carousel-btn.next { right: 32px; }
-
-  .section {
-    padding: 48px 64px 64px;
-    max-width: 1280px;
+  .demo-window {
+    width: calc(100% - 24px);
     margin: 0 auto;
   }
 
-  .section-title {
-    font-size: 2.25rem;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-  }
+  .steps-grid { grid-template-columns: 1fr; gap: 28px; }
+  .step-item h3 { margin-top: 22px; }
+  .demo-callout { align-items: flex-start; flex-direction: column; }
 }
 
-/* ===== WIDE DESKTOP (>= 1440px) ===== */
-@media (min-width: 1440px) {
-  .products-grid {
-    grid-template-columns: repeat(5, 1fr);
+@media (max-width: 520px) {
+  .landing-nav {
+    width: min(100% - 32px, 1240px);
   }
+
+  .landing-nav__actions { gap: 10px; }
+  .landing-login { display: none; }
+
+  .landing-hero { width: min(100% - 32px, 1240px); }
+  .hero-actions { align-items: flex-start; flex-direction: column; }
+  .demo-window { transform: none; box-shadow: 12px 12px 0 #ded3c9; }
+  .demo-store-head { padding: 32px 22px; }
+  .demo-products { padding-inline: 16px; }
 }
 </style>

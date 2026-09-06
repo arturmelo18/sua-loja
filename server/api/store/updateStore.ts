@@ -2,11 +2,16 @@ import { StoreSchema } from '~/server/models/store'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
-    const { name, store, slides } = await readBody(event)
+    const { ownerId, name, store, color, slides } = await readBody(event)
     const normalizedStore = String(store || '').trim().replace(/^@/, '').toLowerCase()
+    const normalizedColor = String(color || '#7A1F2E').trim().toUpperCase()
 
-    if (!name || !normalizedStore || !slides?.length) {
-        throw createError({ statusCode: 400, statusMessage: 'name, store e slides são obrigatórios' })
+    if (!ownerId || !name || !normalizedStore || !slides?.length) {
+        throw createError({ statusCode: 400, statusMessage: 'ownerId, name, store e slides são obrigatórios' })
+    }
+
+    if (!/^#[0-9A-F]{6}$/.test(normalizedColor)) {
+        throw createError({ statusCode: 400, statusMessage: 'A cor deve estar no formato hexadecimal' })
     }
 
     try {
@@ -21,8 +26,8 @@ export default defineEventHandler(async (event) => {
         )
 
         const store = await StoreSchema.findOneAndUpdate(
-            {},
-            { name, store: normalizedStore, slides: processedSlides },
+            { ownerId: String(ownerId) },
+            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides },
             { new: true, upsert: true }
         )
 
