@@ -21,6 +21,10 @@ export const StoreSchema = defineMongooseModel<Store>({
             type: String,
             default: '#7A1F2E'
         },
+        active: {
+            type: Boolean,
+            default: true,
+        },
         slides: [
             {
                 title: { type: String, required: true },

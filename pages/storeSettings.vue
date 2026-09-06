@@ -70,7 +70,13 @@
               </label>
               <label class="field">
                 <span>Imagem</span>
-                <input v-model="slide.image" type="url" placeholder="https://..." required>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  :required="!slide.image"
+                  @change="handleSlideImage($event, index)"
+                >
+                <img v-if="slide.image" class="slide-preview" :src="slide.image" :alt="slide.title || `Prévia do slide ${index + 1}`">
               </label>
             </div>
             <label class="field">
@@ -132,6 +138,35 @@ function removeSlide(index: number) {
   storeForm.slides.splice(index, 1)
 }
 
+function handleSlideImage(event: Event, index: number) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) return
+
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    errorMessage.value = 'Escolha uma imagem PNG, JPG ou WEBP.'
+    input.value = ''
+    return
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    errorMessage.value = 'A imagem não pode ultrapassar 2MB.'
+    input.value = ''
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    const slide = storeForm.slides[index]
+    if (!slide) return
+
+    slide.image = String(reader.result || '')
+    errorMessage.value = ''
+  }
+  reader.readAsDataURL(file)
+}
+
 async function saveStore() {
   const ownerId = authStore.user?._id
   errorMessage.value = ''
@@ -154,6 +189,10 @@ async function saveStore() {
         slides: storeForm.slides,
       },
     })
+
+    if (authStore.user) {
+      authStore.setUser({ ...authStore.user, kind: 'admin', store: savedStore.store })
+    }
 
     await navigateTo(`/${savedStore.store}`)
   } catch (error: any) {
@@ -288,6 +327,13 @@ onMounted(loadStore)
 
 .field textarea {
   resize: vertical;
+}
+
+.slide-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border: 1px solid #d5ccc3;
 }
 
 .field input:focus,

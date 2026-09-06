@@ -6,7 +6,11 @@ export default defineEventHandler(async (event) => {
   const storeSlug = rawStore.replace(/^@/, '')
   const ownerId = String(query.ownerId || '').trim()
 
-  const filter = storeSlug ? { store: storeSlug } : ownerId ? { ownerId } : {}
+  const filter = storeSlug
+    ? { store: storeSlug, active: { $ne: false } }
+    : ownerId
+      ? { ownerId }
+      : { active: { $ne: false } }
   const store = await StoreSchema.findOne(filter).lean()
 
   return store ?? null

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-cream">
+  <div class="h-screen w-screen bg-cream success-theme" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
     <NavBar />
 
     <div class="success-wrapper">
@@ -23,8 +23,10 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 
-onMounted(() => {
+onMounted(async () => {
+  await loadStoreTheme({ ownerId: authStore.getUser?._id })
   authStore.clearCart()
 })
 
@@ -33,6 +35,11 @@ definePageMeta({ middleware: 'auth' })
 
 <style scoped>
 .bg-cream { background: #F2EDE6; }
+
+.success-theme :deep(.btn-dark) {
+  background: var(--store-color, #7A1F2E);
+  border-color: var(--store-color, #7A1F2E);
+}
 
 .success-wrapper {
   display: flex;

@@ -5,7 +5,15 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/')
   }
 
-  if (to.path.includes('/admin') && !authStore.isAdmin) {
+  if (to.path === '/superAdminPage' && !authStore.isSuperAdmin) {
+    return navigateTo('/')
+  }
+
+  if (to.path === '/adminPage' && authStore.isSuperAdmin) {
+    return navigateTo('/superAdminPage')
+  }
+
+  if ((to.path.includes('/admin') || to.path.includes('/storeSettings')) && !authStore.isAdmin) {
     ElMessage.error('Somente administradores podem acessar essa área.')
     return navigateTo('/')
   }

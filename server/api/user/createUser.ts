@@ -1,4 +1,5 @@
 import { UserSchema } from '~/server/models/user'
+import { StoreSchema } from '~/server/models/store'
 import bcrypt from 'bcrypt'
 import type { ViaCep } from '~/types/ViaCep'
 
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement, store } = body
+  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement } = body
 
   if (!name || !email || !password || !zipcode || !state || !city || !neighborhood || !street || !number) {
     throw createError({
@@ -74,15 +75,45 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await UserSchema.create({
+    const user = await UserSchema.create({
       name,
-      store,
       email,
       password: hashedPassword,
-      // TODO: mudar isso quando a tela de administrador for criada
-      kind: 'user',
+      kind: 'admin',
       address,
     })
+
+    const userId = String(user._id)
+    const normalizedBase = String(name)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 32) || 'loja'
+    const temporaryStore = `${normalizedBase}-${userId.slice(-6)}`
+
+    try {
+      await StoreSchema.create({
+        ownerId: userId,
+        name: `Loja de ${name}`,
+        store: temporaryStore,
+        color: '#7A1F2E',
+        active: false,
+        slides: [],
+      })
+
+      await UserSchema.findByIdAndUpdate(user._id, { store: temporaryStore })
+    } catch (storeError) {
+      await UserSchema.findByIdAndDelete(user._id)
+      throw storeError
+    }
+
+    const safeUser = user.toObject()
+    delete safeUser.password
+    safeUser.store = temporaryStore
+
+    return safeUser
   }
   catch (error: any) {
     if (error.statusCode) throw error

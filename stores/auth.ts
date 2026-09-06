@@ -13,7 +13,8 @@ export const useAuthStore = defineStore('auth', {
     getCart: state => state.cart,
     getStore: state => state.store,
     isAuthenticated: state => state.user !== null,
-    isAdmin: state => state.user?.kind === 'admin',
+    isAdmin: state => state.user?.kind === 'admin' || state.user?.kind === 'superadmin',
+    isSuperAdmin: state => state.user?.kind === 'superadmin',
   },
   actions: {
     setUser(user: User) {

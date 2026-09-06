@@ -3,7 +3,7 @@
     <div class="prod-img-wrap">
       <div class="prod-img-inner">
         <img v-if="imgSrc" :src="imgSrc" :alt="product.name"/>
-        <i v-else class="uil uil-shopping-bag" style="font-size:48px;opacity:0.2;color:#1A1A1A;"></i>
+        <i v-else class="uil uil-shopping-bag product-placeholder"></i>
       </div>
       <div v-if="!product.quantity" class="unavailable-overlay">
         <span>Indisponível</span>
@@ -53,6 +53,10 @@ function goToDetailView() {
   transform: translateY(-2px);
 }
 
+.product-card:not(.product-unavailable):hover .prod-name {
+  color: var(--store-color, #7A1F2E);
+}
+
 .product-unavailable {
   cursor: not-allowed;
 }
@@ -65,6 +69,12 @@ function goToDetailView() {
   align-items: center;
   justify-content: center;
   position: relative;
+}
+
+.product-placeholder {
+  color: var(--store-color, #1A1A1A);
+  font-size: 48px;
+  opacity: 0.2;
 }
 
 .prod-img-inner {
@@ -84,6 +94,10 @@ function goToDetailView() {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.prod-price {
+  color: var(--store-color, #7A1F2E);
 }
 
 .unavailable-overlay {

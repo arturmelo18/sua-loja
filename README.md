@@ -1,5 +1,28 @@
 # Nuxt Minimal Starter
 
+## Super administrador
+
+Defina estas variáveis no ambiente do servidor para criar ou promover automaticamente o usuário super administrador na inicialização do Nitro:
+
+```env
+SUPER_ADMIN_EMAIL=admin@exemplo.com
+SUPER_ADMIN_PASSWORD=uma-senha-forte
+SUPER_ADMIN_NAME=Super administrador
+```
+
+O super administrador acessa a aba **Lojas** em `/adminPage`. A desativação de uma loja é lógica: o registro permanece no banco com `active: false`.
+
+## Recuperação de senha
+
+Configure o Resend no ambiente do servidor para enviar os códigos de recuperação:
+
+```env
+RESEND_API_KEY=re_xxxxxxxxx
+RESEND_FROM_EMAIL=Sua Loja <noreply@seudominio.com>
+```
+
+O fluxo está disponível em `/forgotPassword`. O código expira em 15 minutos, aceita no máximo cinco tentativas e é armazenado apenas como hash.
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

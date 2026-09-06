@@ -8,7 +8,6 @@
         <ul class="adm-nav">
           <li><a @click="loadDashboard(); currentSection = 'dashboard'" :class="{ active: currentSection === 'dashboard' }">Dashboard</a></li>
           <li><a @click="loadStore(); currentSection = 'loja'" :class="{ active: currentSection === 'loja' }">Loja</a></li> 
-          <li><a @click="loadUsers(); currentSection = 'usuarios'" :class="{ active: currentSection === 'usuarios' }">Usuários</a></li>
           <li><a @click="loadAllOrders(); currentSection = 'pedidos'" :class="{ active: currentSection === 'pedidos' }">Pedidos</a></li>
           <li><a @click="currentSection = 'produtos'" :class="{ active: currentSection === 'produtos' }">Produtos</a></li>
           <li><a @click="navigateTo('/productPage')" class="adm-nav-link">+ Novo Produto</a></li>
@@ -180,45 +179,6 @@
             </table>
           </div>
           <div v-else><span>Carregando produtos...</span></div>
-        </div>
-
-        <!-- Usuários -->
-        <div v-if="currentSection === 'usuarios'">
-          <div class="adm-title">Gerenciar Usuários</div>
-          <div v-if="!isLoadingUsers" class="products-table-container mt-5">
-            <table class="products-table">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>E-mail</th>
-                  <th>Tipo</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="user in state.users" :key="user._id">
-                  <td>{{ user.name }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>
-                    <span :class="['kind-badge', user.kind === 'admin' ? 'kind-admin' : 'kind-user']">
-                      {{ user.kind === 'admin' ? 'Admin' : 'Usuário' }}
-                    </span>
-                  </td>
-                  <td>
-                    <el-button class="edit-button" @click="toggleKind(user)">
-                      {{ user.kind === 'admin' ? 'Tornar Usuário' : 'Tornar Admin' }}
-                    </el-button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="pagination-row">
-              <el-button :disabled="usersPage <= 1" @click="prevUsersPage">Anterior</el-button>
-              <span class="page-info">Página {{ usersPage }}</span>
-              <el-button :disabled="usersPage * USERS_LIMIT >= usersTotal" @click="nextUsersPage">Próxima</el-button>
-            </div>
-          </div>
-          <div v-else><span>Carregando usuários...</span></div>
         </div>
 
         <!-- Pedidos -->
@@ -400,29 +360,22 @@ const authStore = useAuthStore()
 import { Chart, registerables } from 'chart.js'
 import type { Order } from '~/types/Order'
 import type { Product } from '~/types/Product'
-import type { User } from '~/types/User'
 
 Chart.register(...registerables)
 
 const isLoadingProducts = ref(false)
-const isLoadingUsers    = ref(false)
 const isLoadingOrders   = ref(false)
 const isLoadingDash     = ref(false)
 const currentSection    = ref('dashboard')
 
 const LIMIT        = 10
-const USERS_LIMIT  = 10
 const ORDERS_LIMIT = 10
 
 const state = reactive({
   page:     1,
   total:    0,
   products: [] as Product[],
-  users:    [] as User[],
 })
-
-const usersPage  = ref(1)
-const usersTotal = ref(0)
 
 const ordersPage  = ref(1)
 const ordersTotal = ref(0)
@@ -473,6 +426,7 @@ async function loadDashboard() {
         endDate:   dashFilters.endDate   || undefined,
         status:    dashFilters.status    || undefined,
         productId: dashFilters.productId || undefined,
+        store: authStore.user?.store || undefined,
       },
     })
     console.log('resultado dashboard:', result)
@@ -602,7 +556,7 @@ async function searchProducts(reset = false) {
     if (reset) { state.page = 1; state.products = [] }
     const result = await $fetch<any>('/api/product/searchProduct', {
       method: 'POST',
-      body: { page: state.page, limit: LIMIT },
+      body: { page: state.page, limit: LIMIT, store: authStore.user?.store || undefined },
     })
     state.page     = result.pagination.page
     state.total    = result.pagination.total
@@ -641,56 +595,13 @@ async function inativeProduct(productId?: string) {
   }
 }
 
-// ── Usuários ──────────────────────────────────────────────
-
-async function loadUsers() {
-  try {
-    isLoadingUsers.value = true
-    const result = await $fetch<any>('/api/user/listUsers', {
-      params: { page: usersPage.value, limit: USERS_LIMIT },
-    })
-    state.users  = result.data as User[]
-    usersTotal.value = result.pagination.total
-  } catch {
-    ElMessage.error('Erro ao carregar usuários')
-  } finally {
-    isLoadingUsers.value = false
-  }
-}
-
-async function prevUsersPage() {
-  if (usersPage.value <= 1) return
-  usersPage.value--; await loadUsers()
-}
-
-async function nextUsersPage() {
-  if (usersPage.value * USERS_LIMIT >= usersTotal.value) return
-  usersPage.value++; await loadUsers()
-}
-
-async function toggleKind(user: User) {
-  const newKind = user.kind === 'admin' ? 'user' : 'admin'
-  const label   = newKind === 'admin' ? 'administrador' : 'usuário comum'
-  try {
-    await ElMessageBox.confirm(`Deseja tornar ${user.name} um ${label}?`, 'Confirmar alteração', {
-      confirmButtonText: 'Sim', cancelButtonText: 'Não',
-    })
-    await $fetch('/api/user/updateKind', { method: 'PATCH', body: { userId: user._id, kind: newKind } })
-    const index = state.users.findIndex(u => u._id === user._id)
-    if (index !== -1) state.users[index] = { ...state.users[index], kind: newKind } as User
-    ElMessage.success(`${user.name} agora é ${label}`)
-  } catch (error) {
-    if (error !== 'cancel') ElMessage.error('Erro ao atualizar tipo do usuário')
-  }
-}
-
 // ── Pedidos ──────────────────────────────────────────────
 
 async function loadAllOrders() {
   isLoadingOrders.value = true
   try {
     const result = await $fetch<any>('/api/order/listAllOrders', {
-      params: { page: ordersPage.value, limit: ORDERS_LIMIT, search: orderSearch.value },
+      params: { page: ordersPage.value, limit: ORDERS_LIMIT, search: orderSearch.value, store: authStore.user?.store || undefined },
     })
     allOrders.value    = result.data as Order[]
     ordersTotal.value  = result.pagination.total
@@ -765,7 +676,9 @@ const storeForm = reactive({
 async function loadStore() {
   isLoadingStore.value = true
   try {
-    const store = await $fetch<Store | null>('/api/store/getStore')
+    const store = await $fetch<Store | null>('/api/store/getStore', {
+      params: { ownerId: authStore.user?._id },
+    })
     if (store) {
       storeForm.name      = store.name
       storeForm.store = store.store || ''

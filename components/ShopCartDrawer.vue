@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 const itens = [
   {
     name: "item 1",
@@ -28,7 +28,21 @@ const itens = [
 
 <style>
 .page-container {
-  background-color: #f9fafb;
+  background-color: color-mix(in srgb, var(--store-color, #7A1F2E) 5%, #fff);
+  color: var(--store-color, #7A1F2E);
+}
+
+.page-container :deep(button) {
+  color: var(--store-color, #7A1F2E);
+  border-color: color-mix(in srgb, var(--store-color, #7A1F2E) 35%, transparent);
+}
+
+.page-container :deep([role='dialog']) {
+  background: color-mix(in srgb, var(--store-color, #7A1F2E) 4%, #fff);
+}
+
+.page-container h1 {
+  color: var(--store-color, #7A1F2E);
 }
 .content-item {
   color: white;

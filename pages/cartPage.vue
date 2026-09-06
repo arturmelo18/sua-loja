@@ -1,5 +1,5 @@
 <template>
-    <div class="page-wrapper-cart">
+    <div class="page-wrapper-cart" :style="{ '--store-color': storeColor, '--burgundy': storeColor }">
         <header class="admin-top-nav">
             <NavBar />
         </header>
@@ -97,6 +97,7 @@
 import type { Cart, CartItem } from '~/types/Cart'
 
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
 const isUpdating = ref(false)
 const isLoading = ref(false)
 
@@ -124,6 +125,7 @@ function calculateItemPrice(item: CartItem): number {
 }
 
 onMounted(async () => {
+    await loadStoreTheme({ ownerId: authStore.getUser?._id })
     isLoading.value = true
     const userId = authStore.getUser?._id
 
@@ -202,6 +204,12 @@ definePageMeta({ middleware: 'auth' })
 .admin-top-nav {
     background: #fff;
     border-bottom: 1px solid rgba(74, 15, 1, 0.06);
+}
+
+.page-wrapper-cart :deep(.btn-primary),
+.page-wrapper-cart :deep(.btn-dark) {
+    background: var(--store-color, #7A1F2E) !important;
+    border-color: var(--store-color, #7A1F2E) !important;
 }
 
 .cart-main {
