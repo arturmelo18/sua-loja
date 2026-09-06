@@ -2,7 +2,7 @@ import { StoreSchema } from '~/server/models/store'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
-    const rawCommunity = String(query.community || '').trim()
+    const rawStore = String(query.store || '').trim()
     const community = rawCommunity.replace(/^@/, '')
 
     const filter = store ? { store } : {}
