@@ -9,7 +9,7 @@ export const UserSchema = defineMongooseModel<User>({
       type: String,
       required: true,
     },
-    community: {
+    store: {
       type: String,
       required: true
     },
