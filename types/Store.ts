@@ -7,7 +7,7 @@ export interface StoreSlide {
 
 export interface Store {
     _id: string
-    community: string
+    store: string
     name: string
     slides: StoreSlide[]
     createdAt: Date
