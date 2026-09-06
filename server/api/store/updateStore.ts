@@ -2,7 +2,7 @@ import { StoreSchema } from '~/server/models/store'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
-    const { name, community, slides } = await readBody(event)
+    const { name, store, slides } = await readBody(event)
     const normalizedCommunity = String(community || '').trim().replace(/^@/, '').toLowerCase()
 
     if (!name || !normalizedCommunity || !slides?.length) {
