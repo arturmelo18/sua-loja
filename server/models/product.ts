@@ -9,7 +9,7 @@ export const ProductSchema = defineMongooseModel<Product>({
       required: true,
       trim: true,
     },
-    community: {
+    store: {
       type: String,
       required: true
     },
