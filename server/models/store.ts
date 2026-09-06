@@ -8,7 +8,7 @@ export const StoreSchema = defineMongooseModel<Store>({
             type: String,
             required: true,
         },
-        community: {
+        store: {
             type: String,
             required: true
         },
