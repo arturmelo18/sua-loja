@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement, community } = body
+  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement, store } = body
 
   if (!name || !email || !password || !zipcode || !state || !city || !neighborhood || !street || !number) {
     throw createError({
