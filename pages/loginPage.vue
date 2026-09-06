@@ -98,7 +98,13 @@ async function authUser() {
 
     ElMessage.success('Autenticação realizada com sucesso!')
     
-    const nextPath = typeof route.query.next === 'string' ? route.query.next : '/'
+    const nextPath = typeof route.query.next === 'string'
+      ? route.query.next
+      : response.kind === 'superadmin'
+        ? '/superAdminPage'
+        : response.store
+          ? `/${encodeURIComponent(response.store)}`
+          : '/'
     await navigateTo(nextPath)
   }
   catch (error: any) {

@@ -12,6 +12,7 @@ export interface Store {
     name: string
     color?: string
     active: boolean
+    approvalStatus?: 'pending' | 'approved' | 'rejected'
     slides: StoreSlide[]
     createdAt: Date
     updatedAt: Date

@@ -9,6 +9,17 @@ export const ProductSchema = defineMongooseModel<Product>({
       required: true,
       trim: true,
     },
+    category: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    variants: [
+      {
+        name: { type: String, required: true, trim: true },
+        quantity: { type: Number, required: true, min: 0 },
+      },
+    ],
     store: {
       type: String,
       required: true

@@ -9,6 +9,9 @@
                 <div class="page-header-row">
                     <h2>Gerenciar Cadastro</h2>
                     <div class="header-actions">
+                      <el-button class="store-button" @click="navigateTo('/storeSettings')">
+                        {{ authStore.getUser?.store ? 'Gerenciar minha loja' : 'Criar minha loja' }}
+                      </el-button>
                         <el-button class="btn-secondary" @click="navigateTo('/')">Cancelar</el-button>
                         <el-button class="btn-primary" :disabled="isLoading" @click="handleSaveProfile">
                             {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
@@ -323,6 +326,12 @@ definePageMeta({ middleware: 'auth' })
   border-radius: 6px;
   padding: 10px 20px;
   transition: all 0.2s ease;
+}
+
+.store-button {
+  background-color: var(--store-color, #7A1F2E) !important;
+  border-color: var(--store-color, #7A1F2E) !important;
+  color: #fff !important;
 }
 
 .btn-primary:hover {

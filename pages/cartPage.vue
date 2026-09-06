@@ -37,6 +37,7 @@
 
                         <div class="item-body">
                             <span class="item-name">{{ item.product?.name }}</span>
+                            <span v-if="item.variantName" class="item-variant">{{ item.product?.category || 'Opção' }}: {{ item.variantName }}</span>
                             <span class="item-ref">REF: {{ item.product?._id?.slice(-6).toUpperCase() }}</span>
                             <span class="item-price">{{ formatPrice(calculateItemPrice(item)) }}</span>
 
@@ -51,7 +52,7 @@
                                     <span class="qty-val">{{ item.quantity }}</span>
                                     <button
                                         class="qty-btn"
-                                        :disabled="item.quantity >= (item.product?.quantity ?? 0) || isUpdating"
+                                        :disabled="item.quantity >= availableQuantity(item) || isUpdating"
                                         @click="updateQuantity(item, item.quantity + 1)"
                                         aria-label="Aumentar quantidade"
                                     >+</button>
@@ -122,6 +123,11 @@ const formatPrice = (value: number) =>
 function calculateItemPrice(item: CartItem): number {
     const price = item.price ?? item.product?.price ?? 0
     return (price * item.quantity) / 100
+}
+
+function availableQuantity(item: CartItem): number {
+    if (!item.variantName || !item.product?.variants?.length) return item.product?.quantity ?? 0
+    return item.product.variants.find(variant => variant.name === item.variantName)?.quantity ?? 0
 }
 
 onMounted(async () => {

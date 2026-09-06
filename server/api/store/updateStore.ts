@@ -26,16 +26,16 @@ export default defineEventHandler(async (event) => {
             })
         )
 
+        const existingStore = await StoreSchema.findOne({ ownerId: String(ownerId) })
+        const isApproved = existingStore?.approvalStatus === 'approved'
+        const approvalStatus = isApproved ? 'approved' : 'pending'
         const store = await StoreSchema.findOneAndUpdate(
             { ownerId: String(ownerId) },
-            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides, active: true },
+            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides, active: isApproved, approvalStatus },
             { new: true, upsert: true }
         )
 
-        await UserSchema.findByIdAndUpdate(String(ownerId), {
-            kind: 'admin',
-            store: normalizedStore,
-        })
+        await UserSchema.findByIdAndUpdate(String(ownerId), { store: normalizedStore })
 
         return store
     } catch (e) {

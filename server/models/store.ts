@@ -25,6 +25,11 @@ export const StoreSchema = defineMongooseModel<Store>({
             type: Boolean,
             default: true,
         },
+        approvalStatus: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected'],
+            default: 'pending',
+        },
         slides: [
             {
                 title: { type: String, required: true },

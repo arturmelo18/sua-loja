@@ -8,7 +8,7 @@
       </nav>
       <div class="landing-nav__actions">
         <button class="landing-login" type="button" @click="navigateTo('/loginPage')">Entrar</button>
-        <button class="landing-create" type="button" @click="navigateTo('/createUser')">Criar minha loja</button>
+        <button class="landing-create" type="button" @click="navigateTo('/createUser?intent=store')">Criar minha loja</button>
       </div>
     </header>
 
@@ -22,7 +22,7 @@
             simples de administrar e pronta para vender.
           </p>
           <div class="hero-actions">
-            <button class="primary-button" type="button" @click="navigateTo('/createUser')">
+            <button class="primary-button" type="button" @click="navigateTo('/createUser?intent=store')">
               Criar minha loja
             </button>
             <button class="text-button" type="button" @click="navigateTo('/loginPage')">
@@ -71,7 +71,7 @@
           <h2>Veja como sua vitrine pode começar.</h2>
           <p>Escolha um nome, uma cor e conte ao mundo o que você faz.</p>
         </div>
-        <button class="outline-button" type="button" @click="navigateTo('/createUser')">
+        <button class="outline-button" type="button" @click="navigateTo('/createUser?intent=store')">
           Começar agora <span>↗</span>
         </button>
       </section>
@@ -82,6 +82,33 @@
 </template>
 
 <script setup lang="ts">
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  const user = authStore.getUser
+
+  if (user?.kind === 'superadmin') {
+    navigateTo('/superAdminPage')
+    return
+  }
+
+  if (user?.store) {
+    try {
+      const store = await $fetch<{ store: string; active?: boolean } | null>('/api/store/getStore', {
+        params: { ownerId: user._id },
+      })
+
+      if (store?.active !== false && store?.store) {
+        navigateTo(`/${encodeURIComponent(store.store)}`)
+      } else {
+        navigateTo('/storeSettings')
+      }
+    } catch {
+      navigateTo('/storeSettings')
+    }
+  }
+})
+
 const demoProducts = [
   { name: 'Bolsa Mini', price: 'R$ 89,90', color: 'linear-gradient(135deg, #d98c72, #9e4b47)' },
   { name: 'Caderno Terra', price: 'R$ 42,00', color: 'linear-gradient(135deg, #d8b875, #8d7650)' },

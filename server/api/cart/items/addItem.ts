@@ -2,7 +2,7 @@ import { CartSchema, CartItemSchema } from '~/server/models/cart'
 import { ProductSchema } from '~/server/models/product'
 
 export default defineEventHandler(async (event) => {
-  const { cartId, productId, quantity } = await readBody(event)
+  const { cartId, productId, quantity, variantName } = await readBody(event)
 
   if (!cartId || !productId || !quantity) {
     throw createError({
@@ -17,9 +17,17 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Produto não encontrado' })
     }
 
-    const existingItem = await CartItemSchema.findOne({ cartId, product: productId })
+    const variant = product.variants?.find(item => item.name === variantName)
+    if (product.variants?.length && (!variant || variant.quantity < quantity)) {
+      throw createError({ statusCode: 400, statusMessage: 'Variação ou estoque indisponível' })
+    }
+
+    const existingItem = await CartItemSchema.findOne({ cartId, product: productId, variantName: variantName || '' })
 
     if (existingItem) {
+      if (variant && existingItem.quantity + quantity > variant.quantity) {
+        throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente para esta variação' })
+      }
       existingItem.quantity += quantity
       existingItem.price = product.price
       await existingItem.save()
@@ -32,6 +40,7 @@ export default defineEventHandler(async (event) => {
       quantity,
       cartId,
       price: product.price,
+      variantName: variantName || '',
     })
 
     await CartSchema.findByIdAndUpdate(cartId, {

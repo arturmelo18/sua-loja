@@ -16,6 +16,7 @@ export interface CartItem {
   quantity: number
   cartId: string
   price: number
+  variantName?: string
   createdAt: Date
   updatedAt: Date
 }

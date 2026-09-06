@@ -25,11 +25,27 @@
           <div class="prod-modal-price">{{ formattedPrice }}</div>
           <div class="prod-price-unit">por unidade</div>
 
+          <div v-if="state.product.variants?.length" class="variant-selector">
+            <span class="qty-label">{{ state.product.category || 'Opção' }}</span>
+            <div class="variant-options">
+              <button
+                v-for="variant in state.product.variants"
+                :key="variant.name"
+                type="button"
+                :class="['variant-option', { selected: selectedVariant === variant.name }]"
+                :disabled="variant.quantity <= 0"
+                @click="selectVariant(variant.name)"
+              >
+                {{ variant.name }}
+              </button>
+            </div>
+          </div>
+
           <p class="prod-modal-desc">{{ state.product.description }}</p>
 
           <div class="prod-stock-info">
             <span class="stock-dot"></span>
-            {{ state.product.quantity }} unidades em estoque
+            {{ availableQuantity }} unidades em estoque
           </div>
 
           <span class="qty-label">Quantidade</span>
@@ -42,7 +58,7 @@
             <span class="qty-num">{{ state.saleQtd }}</span>
             <button
               class="qty-btn"
-              :disabled="state.saleQtd >= state.product.quantity"
+              :disabled="state.saleQtd >= availableQuantity"
               @click="state.saleQtd++"
             >+</button>
           </div>
@@ -65,6 +81,7 @@ import type { Product } from '~/types/Product'
 const route = useRoute()
 const authStore = useAuthStore()
 const isAdding = ref(false)
+const selectedVariant = ref('')
 const { storeColor, loadStoreTheme } = useStoreTheme()
 
 const state = reactive({
@@ -83,6 +100,11 @@ const formattedPrice = computed(() =>
   }).format((Number(state.product.price) || 0) / 100)
 )
 
+const availableQuantity = computed(() => {
+  if (!state.product.variants?.length) return state.product.quantity || 0
+  return state.product.variants.find(variant => variant.name === selectedVariant.value)?.quantity || 0
+})
+
 onMounted(async () => {
   if (!route.query._id) return
   try {
@@ -90,6 +112,7 @@ onMounted(async () => {
       method: 'GET',
       params: { _id: route.query._id },
     })
+    selectedVariant.value = state.product.variants?.find(variant => variant.quantity > 0)?.name || ''
     await loadStoreTheme({ storeSlug: state.product.store })
   } catch {
     ElMessage.error('Erro ao carregar produto')
@@ -108,6 +131,16 @@ async function addToCart() {
     return
   }
 
+  if (state.product.variants?.length && !selectedVariant.value) {
+    ElMessage.warning('Escolha uma opção do produto')
+    return
+  }
+
+  if (state.saleQtd > availableQuantity.value) {
+    ElMessage.warning('Quantidade indisponível para esta opção')
+    return
+  }
+
   isAdding.value = true
   try {
     await $fetch('/api/cart/items/addItem', {
@@ -116,6 +149,7 @@ async function addToCart() {
         cartId,
         productId: state.product._id,
         quantity: state.saleQtd,
+        variantName: selectedVariant.value || undefined,
       },
     })
     ElMessage.success('Produto adicionado ao carrinho!')
@@ -134,6 +168,32 @@ async function addToCart() {
   color: var(--store-color, #7A1F2E);
   font-size: 48px;
   opacity: 0.2;
+}
+
+.variant-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.variant-option {
+  min-width: 44px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--store-color, #7A1F2E) 28%, transparent);
+  color: var(--store-color, #7A1F2E);
+  background: transparent;
+  cursor: pointer;
+}
+
+.variant-option.selected {
+  color: #fff;
+  background: var(--store-color, #7A1F2E);
+}
+
+.variant-option:disabled {
+  cursor: not-allowed;
+  opacity: .4;
 }
 
 .product-theme :deep(.btn-dark) {

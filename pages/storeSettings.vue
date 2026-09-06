@@ -8,8 +8,9 @@
           <p class="eyebrow">Sua loja</p>
           <h1>Configure seu espaço</h1>
           <p class="settings-intro">Defina a identidade da sua vitrine e publique quando estiver pronta.</p>
+          <p v-if="approvalMessage" class="approval-message">{{ approvalMessage }}</p>
         </div>
-        <button class="preview-button" type="button" :disabled="!storeForm.store" @click="previewStore">
+        <button class="preview-button" type="button" :disabled="!storeForm.store || !isStoreApproved" @click="previewStore">
           Ver vitrine
         </button>
       </header>
@@ -91,7 +92,7 @@
         <div class="form-actions">
           <span v-if="errorMessage" class="error-message">{{ errorMessage }}</span>
           <button class="save-button" type="submit" :disabled="isSaving">
-            {{ isSaving ? 'Publicando...' : 'Salvar e publicar loja' }}
+            {{ isSaving ? 'Enviando...' : 'Enviar para aprovação' }}
           </button>
         </div>
       </form>
@@ -105,6 +106,7 @@ import type { Store, StoreSlide } from '~/types/Store'
 const authStore = useAuthStore()
 const isSaving = ref(false)
 const errorMessage = ref('')
+const approvalStatus = ref<'pending' | 'approved' | 'rejected' | undefined>()
 const defaultColor = '#7A1F2E'
 
 const storeForm = reactive({
@@ -112,6 +114,13 @@ const storeForm = reactive({
   store: '',
   color: defaultColor,
   slides: [{ title: '', description: '', image: '' }] as StoreSlide[],
+})
+
+const isStoreApproved = computed(() => !approvalStatus.value || approvalStatus.value === 'approved')
+const approvalMessage = computed(() => {
+  if (approvalStatus.value === 'pending') return 'Sua loja está aguardando aprovação do super administrador.'
+  if (approvalStatus.value === 'rejected') return 'Sua loja foi recusada. Atualize os dados e envie novamente para análise.'
+  return ''
 })
 
 async function loadStore() {
@@ -127,6 +136,7 @@ async function loadStore() {
     storeForm.store = savedStore.store
     storeForm.color = savedStore.color || defaultColor
     storeForm.slides = savedStore.slides.length ? savedStore.slides : storeForm.slides
+    approvalStatus.value = savedStore.approvalStatus
   }
 }
 
@@ -190,11 +200,14 @@ async function saveStore() {
       },
     })
 
-    if (authStore.user) {
-      authStore.setUser({ ...authStore.user, kind: 'admin', store: savedStore.store })
-    }
+    if (authStore.user) authStore.setUser({ ...authStore.user, store: savedStore.store })
 
-    await navigateTo(`/${savedStore.store}`)
+    if (savedStore.approvalStatus === 'approved') {
+      await navigateTo(`/${savedStore.store}`)
+    } else {
+      approvalStatus.value = savedStore.approvalStatus || 'pending'
+      await navigateTo('/userPage')
+    }
   } catch (error: any) {
     errorMessage.value = error.data?.statusMessage || 'Não foi possível publicar sua loja.'
   } finally {
@@ -253,6 +266,12 @@ onMounted(loadStore)
 .section-heading p {
   margin: 0;
   color: #6b6b6b;
+}
+
+.approval-message {
+  margin: 12px 0 0;
+  color: #8a5a00;
+  font-size: .9rem;
 }
 
 .preview-button,

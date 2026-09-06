@@ -22,7 +22,11 @@ export const CartItemSchema = defineMongooseModel<CartItem>({
     price: {
       type: Number,
       required: true,
-    }
+    },
+    variantName: {
+      type: String,
+      default: '',
+    },
   },
   options: {
     timestamps: true,
