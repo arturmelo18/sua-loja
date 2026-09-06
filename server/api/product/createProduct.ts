@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, price, quantity, description, active, image, community } = body
+  const { name, price, quantity, description, active, image, store } = body
 
   if (!name || !price || !quantity || !description || !image) {
     throw createError({
