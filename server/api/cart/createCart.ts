@@ -1,7 +1,7 @@
 import { CartSchema } from '~/server/models/cart'
 
 export default defineEventHandler(async (event) => {
-  const { userId, community } = await readBody(event)
+  const { userId, store } = await readBody(event)
   if (!userId) {
     throw createError({
       statusCode: 400,
