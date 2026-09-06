@@ -3,7 +3,7 @@ import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
     const { name, store, slides } = await readBody(event)
-    const normalizedCommunity = String(community || '').trim().replace(/^@/, '').toLowerCase()
+    const normalizedStore = String(store || '').trim().replace(/^@/, '').toLowerCase()
 
     if (!name || !normalizedCommunity || !slides?.length) {
         throw createError({ statusCode: 400, statusMessage: 'name, community e slides são obrigatórios' })
