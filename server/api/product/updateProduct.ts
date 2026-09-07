@@ -1,5 +1,6 @@
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
+import { createAbacatePayProduct } from '~/server/helpers/createAbacatePayProduct'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -63,11 +64,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const abacateProduct = await AbacatePayConnector.post('/products/create', {
+    const abacateProduct = await createAbacatePayProduct({
       externalId: updatedProduct!._id.toString(),
       name: updatedProduct!.name,
       price: Math.round(updatedProduct!.price * 100), // centavos
-      currency: 'BRL',
       description: updatedProduct!.description,
       imageUrl: updatedProduct!.image,
     })

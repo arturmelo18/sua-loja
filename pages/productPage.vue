@@ -182,6 +182,8 @@ const handleSave = async () => {
 
     const body = {
       ...state.product,
+      store: state.product.store || authStore.user?.store,
+      active: state.product.published,
       quantity: state.product.variants?.length
         ? totalVariantQuantity.value
         : state.product.quantity,

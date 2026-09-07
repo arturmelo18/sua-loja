@@ -3,8 +3,8 @@ import { UserSchema } from '~/server/models/user'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
-    const { ownerId, name, store, color, slides } = await readBody(event)
-    const normalizedStore = String(store || '').trim().replace(/^@/, '').toLowerCase()
+    const { ownerId, name, store: storeSlug, color, slides } = await readBody(event)
+    const normalizedStore = String(storeSlug || '').trim().replace(/^@/, '').toLowerCase()
     const normalizedColor = String(color || '#7A1F2E').trim().toUpperCase()
 
     if (!ownerId || !name || !normalizedStore || !slides?.length) {

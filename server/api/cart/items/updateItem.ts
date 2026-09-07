@@ -4,7 +4,7 @@ import { ProductSchema } from '~/server/models/product'
 export default defineEventHandler(async (event) => {
   const { cartItemId, quantity } = await readBody(event)
 
-  if (!cartItemId || !quantity) {
+  if (!cartItemId || !Number.isInteger(quantity)) {
     throw createError({
       statusCode: 400,
       statusMessage: 'cartItemId e quantity são obrigatórios',
@@ -19,13 +19,9 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const item = await CartItemSchema.findByIdAndUpdate(
-      cartItemId,
-      { quantity },
-      { new: true }
-    ).populate('product')
+    const currentItem = await CartItemSchema.findById(cartItemId).populate('product')
 
-    if (!item) {
+    if (!currentItem) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Item não encontrado',

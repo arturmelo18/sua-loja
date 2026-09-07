@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
     })
 
     return { success: true }
-  } catch {
+  } catch (error: any) {
+    if (error.statusCode) throw error
     throw createError({
       statusCode: 500,
       statusMessage: 'Erro ao remover item do carrinho',

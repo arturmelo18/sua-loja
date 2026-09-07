@@ -40,5 +40,8 @@ export default defineNuxtConfig({
     superAdminName: process.env.SUPER_ADMIN_NAME || 'Super administrador',
     resendApiKey: process.env.RESEND_API_KEY,
     resendFromEmail: process.env.RESEND_FROM_EMAIL,
+    public: {
+      appUrl: process.env.NUXT_PUBLIC_APP_URL || process.env.APP_URL || '',
+    },
   }
 })

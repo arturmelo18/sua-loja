@@ -39,7 +39,8 @@ export default defineEventHandler(async (event) => {
       message: 'Carrinho atualizado com sucesso',
       cart,
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error.statusCode) throw error
     throw createError({
       statusCode: 500,
       statusMessage: 'Erro ao atualizar carrinho',

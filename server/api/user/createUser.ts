@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, email, password, zipcode, state, city, neighborhood, street, number, complement } = body
+  const { name, password, zipcode, state, city, neighborhood, street, number, complement } = body
+  const email = String(body.email || '').trim().toLowerCase()
 
   if (!name || !email || !password || !zipcode || !state || !city || !neighborhood || !street || !number) {
     throw createError({

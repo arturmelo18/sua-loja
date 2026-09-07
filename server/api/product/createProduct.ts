@@ -1,5 +1,5 @@
-import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
+import { createAbacatePayProduct } from '~/server/helpers/createAbacatePayProduct'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { name, price, quantity, description, active, image, store, category, variants = [] } = body
+  const { name, price, quantity, description, active, published, image, store, category, variants = [] } = body
   const normalizedVariants = Array.isArray(variants)
     ? variants
       .map((variant: any) => ({ name: String(variant.name || '').trim(), quantity: Number(variant.quantity) || 0 }))
@@ -21,35 +21,39 @@ export default defineEventHandler(async (event) => {
     ? normalizedVariants.reduce((total: number, variant: { quantity: number }) => total + variant.quantity, 0)
     : Number(quantity)
 
-  if (!name || !price || totalQuantity < 0 || !description || !image) {
+  const normalizedPrice = Number(price)
+  const normalizedQuantity = Number(totalQuantity)
+  const isPublished = published ?? active ?? true
+
+  if (!name || !store || !Number.isFinite(normalizedPrice) || normalizedPrice <= 0 || !Number.isFinite(normalizedQuantity) || normalizedQuantity < 0 || !description || !image) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Todos os campos obrigatórios devem ser preenchidos.',
     })
   }
 
-  if (price < 0) {
+  if (normalizedPrice < 0) {
     throw createError({
       statusCode: 400,
       statusMessage: 'O preço do produto deve ser positivo.',
     })
   }
 
-  if (price > 1000000) {
+  if (normalizedPrice > 1000000) {
     throw createError({
       statusCode: 400,
       statusMessage: 'O preço do produto deve ser menor que 1000000.',
     })
   }
 
-  if (quantity < 0) {
+  if (normalizedQuantity < 0) {
     throw createError({
       statusCode: 400,
       statusMessage: 'A quantidade do produto deve ser positiva.',
     })
   }
 
-  if (quantity > 1000000) {
+  if (normalizedQuantity > 1000000) {
     throw createError({
       statusCode: 400,
       statusMessage: 'A quantidade do produto deve ser menor que 1000000',
@@ -58,24 +62,26 @@ export default defineEventHandler(async (event) => {
 
   const cdnImg = await generateCdnImage(image)
 
+  let product: any = null
+
   try {
-    const product = await ProductSchema.create({
+    product = await ProductSchema.create({
       name,
       store,
-      price,
-      quantity: totalQuantity,
+      price: normalizedPrice,
+      quantity: normalizedQuantity,
       category: String(category || '').trim(),
       variants: normalizedVariants,
       description,
-      active,
+      active: isPublished,
+      published: isPublished,
       image: cdnImg.url || '',
     })
 
-    const abacateProduct = await AbacatePayConnector.post('/products/create', {
+    const abacateProduct = await createAbacatePayProduct({
       externalId: product._id.toString(),
       name: product.name,
-      price: Math.round(product.price * 100),
-      currency: 'BRL',
+      price: Math.round(product.price),
       description: product.description,
       imageUrl: product.image,
     })
@@ -92,6 +98,8 @@ export default defineEventHandler(async (event) => {
   }
   catch (error: any) {
     if (error.statusCode) throw error
-    throw createError({ statusCode: 500, statusMessage: 'Erro ao salvar produto no banco de dados' })
+    if (product?._id) await ProductSchema.findByIdAndDelete(product._id)
+    console.error('Erro ao criar produto:', error)
+    throw createError({ statusCode: 500, statusMessage: 'Erro ao salvar produto ou sincronizar com o gateway de pagamentos' })
   }
 })

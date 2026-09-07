@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
 import type { Product } from '~/types/Product'
+import type { Cart, CartItem } from '~/types/Cart'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -105,6 +106,11 @@ const availableQuantity = computed(() => {
   return state.product.variants.find(variant => variant.name === selectedVariant.value)?.quantity || 0
 })
 
+function selectVariant(variantName: string) {
+  selectedVariant.value = variantName
+  state.saleQtd = 1
+}
+
 onMounted(async () => {
   if (!route.query._id) return
   try {
@@ -125,12 +131,6 @@ async function addToCart() {
     return
   }
 
-  const cartId = authStore.getCart?._id
-  if (!cartId) {
-    ElMessage.error('Carrinho não encontrado')
-    return
-  }
-
   if (state.product.variants?.length && !selectedVariant.value) {
     ElMessage.warning('Escolha uma opção do produto')
     return
@@ -143,15 +143,17 @@ async function addToCart() {
 
   isAdding.value = true
   try {
-    await $fetch('/api/cart/items/addItem', {
+    const result = await $fetch<{ item: CartItem; cart: Cart }>('/api/cart/items/addItem', {
       method: 'POST',
       body: {
-        cartId,
+        cartId: authStore.getCart?._id,
+        userId: authStore.getUser._id,
         productId: state.product._id,
         quantity: state.saleQtd,
         variantName: selectedVariant.value || undefined,
       },
     })
+    authStore.setCart(result.cart)
     ElMessage.success('Produto adicionado ao carrinho!')
   } catch (error: any) {
     ElMessage.error(error.data?.statusMessage || 'Erro ao adicionar ao carrinho')
@@ -373,6 +375,7 @@ async function addToCart() {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #000000;
 }
 
 /* ===== TABLET (>= 640px) ===== */

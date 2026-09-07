@@ -1,16 +1,17 @@
 import { UserSchema } from "~/server/models/user";
 
 export default defineEventHandler(async (event) => {
-  const emailParam = getRouterParam(event, "email");
+  const emailParam = String(getRouterParam(event, "email") || "").trim().toLowerCase();
   const body = await readBody(event);
 
-  const { name, email, kind } = body;
+  const { name, kind } = body;
+  const email = body.email ? String(body.email).trim().toLowerCase() : undefined;
 
   const fieldsToUpdate = Object.fromEntries(
     Object.entries({
       name,
       email,
-      kind: kind?.includes("admin") ? "admin" : "user",
+      kind,
     }).filter(([_, value]) => value !== undefined),
   );
 

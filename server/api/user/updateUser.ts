@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { id, _id, name, email, password, zipcode, state, city, neighborhood, street, number, complement } = body
+  const { id, _id, name, password, zipcode, state, city, neighborhood, street, number, complement } = body
+  const email = body.email ? String(body.email).trim().toLowerCase() : undefined
   const userId = id || _id
 
   if (!userId) {

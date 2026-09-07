@@ -3,7 +3,10 @@ import { OrderSchema } from '~/server/models/order'
 export default defineEventHandler(async (event) => {
     const { page = 1, limit = 10, search = '', store = '' } = getQuery(event)
 
-    const skip = (Number(page) - 1) * Number(limit)
+    const safePage = Math.max(Number(page) || 1, 1)
+    const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 100)
+    const skip = (safePage - 1) * safeLimit
+    const normalizedStore = String(store).replace(/^@/, '').toLowerCase()
 
     const matchStage = search
         ? {
@@ -17,6 +20,7 @@ export default defineEventHandler(async (event) => {
         : { $match: {} }
 
     const pipeline: any[] = [
+        ...(normalizedStore ? [{ $match: { store: normalizedStore } }] : []),
         // popula user
         {
             $lookup: {
@@ -109,6 +113,6 @@ export default defineEventHandler(async (event) => {
 
     return {
         data: orders,
-        pagination: { page: Number(page), limit: Number(limit), total },
+        pagination: { page: safePage, limit: safeLimit, total },
     }
 })

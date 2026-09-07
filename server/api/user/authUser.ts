@@ -11,7 +11,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { email, password } = body
+  const email = String(body.email).trim().toLowerCase()
+  const { password } = body
 
   const user = await UserSchema.findOne({ email: email })
 

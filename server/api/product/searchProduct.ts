@@ -20,9 +20,12 @@ export default defineEventHandler(async (event) => {
   } = body
 
   const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 100)
-  const skip = page > 0 ? (page - 1) * safeLimit : safeLimit
+  const safePage = Math.max(Number(page) || 1, 1)
+  const skip = (safePage - 1) * safeLimit
 
   const filter: any = {}
+
+  filter.active = true
 
   if (store) {
     filter.store = String(store).replace(/^@/, '').toLowerCase()
@@ -69,7 +72,7 @@ export default defineEventHandler(async (event) => {
       data: products,
       pagination: {
         total,
-        page: page,
+        page: safePage,
       },
     }
   }

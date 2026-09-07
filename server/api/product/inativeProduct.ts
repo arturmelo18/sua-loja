@@ -10,11 +10,13 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-        const deletedProduct = await ProductSchema.findByIdAndUpdate({
-            active: false
-        })
+        const updatedProduct = await ProductSchema.findByIdAndUpdate(
+            productId,
+            { active: false, published: false },
+            { new: true }
+        )
 
-        if (!deletedProduct) {
+        if (!updatedProduct) {
             throw createError({
                 statusCode: 404,
                 statusMessage: 'Produto não encontrado para exclusão.',
@@ -28,6 +30,7 @@ export default defineEventHandler(async (event) => {
         }
 
     } catch (error: any) {
+        if (error.statusCode) throw error
         console.error('Erro ao inativar o produto:', error.message)
 
         throw createError({
