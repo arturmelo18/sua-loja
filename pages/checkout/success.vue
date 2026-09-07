@@ -9,7 +9,9 @@
         </div>
         <h1 class="success-title">Pedido Recebido!</h1>
         <p class="success-sub">
-          Seu pagamento está sendo processado. Você receberá uma confirmação assim que aprovado.
+          {{ paymentStatus === 'PAID'
+            ? 'Seu pagamento foi confirmado e o carrinho foi atualizado.'
+            : 'Seu pagamento está sendo processado. Você receberá uma confirmação assim que aprovado.' }}
         </p>
         <button class="btn btn-dark" @click="navigateTo('/')">
           Continuar Comprando
@@ -23,9 +25,54 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
+const { storeColor, loadStoreTheme } = useStoreTheme()
+const route = useRoute()
+const paymentStatus = ref('PENDING')
+
+async function refreshCart() {
+  const userId = authStore.getUser?._id
+  if (!userId) return
+
+  const cart = await $fetch<any>('/api/cart/getCart', {
+    params: { userId },
+  })
+
+  if (!cart?.items?.length) {
+    authStore.clearCart()
+  } else {
+    authStore.setCart(cart)
+  }
+}
+
+async function waitForPaymentConfirmation() {
+  const externalId = String(route.query.externalId || '')
+  if (!externalId) {
+    authStore.clearCart()
+    return
+  }
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      const result = await $fetch<{ status: string }>('/api/order/status', {
+        params: { externalId },
+      })
+      paymentStatus.value = result.status
+
+      if (result.status === 'PAID') {
+        await refreshCart()
+        return
+      }
+    } catch {
+      // O webhook pode chegar depois do redirecionamento.
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000))
+  }
+}
 
 onMounted(() => {
   authStore.clearCart()
+  await waitForPaymentConfirmation()
 })
 
 definePageMeta({ middleware: 'auth' })

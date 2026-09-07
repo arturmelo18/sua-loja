@@ -35,5 +35,13 @@ export default defineNuxtConfig({
     cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
     cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
     abacatePayApiKey: process.env.ABACATEPAY_API_KEY,
+    superAdminEmail: process.env.SUPER_ADMIN_EMAIL,
+    superAdminPassword: process.env.SUPER_ADMIN_PASSWORD,
+    superAdminName: process.env.SUPER_ADMIN_NAME || 'Super administrador',
+    resendApiKey: process.env.RESEND_API_KEY,
+    resendFromEmail: process.env.RESEND_FROM_EMAIL,
+    public: {
+      appUrl: process.env.NUXT_PUBLIC_APP_URL || process.env.APP_URL || '',
+    },
   }
 })

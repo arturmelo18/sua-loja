@@ -5,6 +5,7 @@ import { generateSaleCode } from '~/server/utils/generateSaleCode'
 
 export default defineEventHandler(async (event) => {
   const { cartId, userId } = await readBody(event)
+  const config = useRuntimeConfig(event)
 
   if (!cartId || !userId) {
     throw createError({ statusCode: 400, statusMessage: 'cartId e userId são obrigatórios' })
@@ -17,6 +18,10 @@ export default defineEventHandler(async (event) => {
 
   if (!cart || !cart.items.length) {
     throw createError({ statusCode: 400, statusMessage: 'Carrinho vazio ou não encontrado' })
+  }
+
+  if (String(cart.user) !== String(userId)) {
+    throw createError({ statusCode: 403, statusMessage: 'O carrinho não pertence ao usuário informado' })
   }
 
   const items = cart.items as any[]
@@ -41,6 +46,11 @@ export default defineEventHandler(async (event) => {
   const total = items.reduce((acc: number, i: any) => acc + i.product.price * i.quantity, 0)
   const externalId = `order-${userId}-${Date.now()}`
   const saleCode = generateSaleCode()
+  const appUrl = String(
+    config.public.appUrl
+      || process.env.APP_URL
+      || getRequestURL(event).origin
+  ).replace(/\/$/, '')
 
   const abacateResponse = await AbacatePayConnector.post('/checkouts/create', {
     externalId,
@@ -48,10 +58,8 @@ export default defineEventHandler(async (event) => {
       id: i.product.abacatePayId,
       quantity: i.quantity,
     })),
-    ...(process.env.APP_URL && {
-      completionUrl: `${process.env.APP_URL}/checkout/success`,
-      returnUrl: `${process.env.APP_URL}/cart`,
-    }),
+    completionUrl: `${appUrl}/checkout/success?externalId=${encodeURIComponent(externalId)}`,
+    returnUrl: `${appUrl}/cart`,
   })
 
   if (!abacateResponse?.data) {
@@ -60,6 +68,7 @@ export default defineEventHandler(async (event) => {
 
   const order = await OrderSchema.create({
     user: userId,
+    store: cart.store,
     items: cart.items.map((i: any) => i._id),
     total,
     status: 'PENDING',

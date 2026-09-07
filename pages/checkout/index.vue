@@ -78,6 +78,7 @@ async function goToPayment() {
         body: {
           cartId: cart.value._id,
           userId: user.value._id,
+          store: cart.value.store,
         },
       }
     )

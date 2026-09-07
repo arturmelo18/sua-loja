@@ -1,7 +1,8 @@
 import { OrderSchema } from '~/server/models/order'
-import { CartSchema, CartItemSchema } from '~/server/models/cart'
+import { CartSchema } from '~/server/models/cart'
 import { ProductSchema } from '~/server/models/product'
 import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
+import { createAbacatePayProduct } from '~/server/helpers/createAbacatePayProduct'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -19,6 +20,15 @@ export default defineEventHandler(async (event) => {
 
   if (!order) {
     throw createError({ statusCode: 404, statusMessage: 'Pedido não encontrado' })
+  }
+
+  if (order.status === 'PAID') {
+    const cart = await CartSchema.findOne({ user: order.user })
+    if (cart?.items.length) {
+      cart.items = []
+      await cart.save()
+    }
+    return { received: true }
   }
 
   order.status = 'PAID'
@@ -40,11 +50,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const abacateProduct = await AbacatePayConnector.post('/products/create', {
+    const abacateProduct = await createAbacatePayProduct({
       externalId: product._id.toString(),
       name: product.name,
       price: Math.round(product.price * 100),
-      currency: 'BRL',
       description: product.description,
       imageUrl: product.image,
     })

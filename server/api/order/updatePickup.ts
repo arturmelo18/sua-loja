@@ -3,7 +3,7 @@ import { OrderSchema } from '~/server/models/order'
 export default defineEventHandler(async (event) => {
     const { orderId, readyForPickup } = await readBody(event)
 
-    if (!orderId || readyForPickup === undefined) {
+    if (!orderId || typeof readyForPickup !== 'boolean') {
         throw createError({ statusCode: 400, statusMessage: 'orderId e readyForPickup são obrigatórios' })
     }
 

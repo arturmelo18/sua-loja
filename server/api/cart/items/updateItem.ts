@@ -3,7 +3,7 @@ import { CartItemSchema } from '~/server/models/cart'
 export default defineEventHandler(async (event) => {
   const { cartItemId, quantity } = await readBody(event)
 
-  if (!cartItemId || !quantity) {
+  if (!cartItemId || !Number.isInteger(quantity)) {
     throw createError({
       statusCode: 400,
       statusMessage: 'cartItemId e quantity são obrigatórios',
@@ -18,21 +18,30 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const item = await CartItemSchema.findByIdAndUpdate(
-      cartItemId,
-      { quantity },
-      { new: true }
-    ).populate('product')
+    const currentItem = await CartItemSchema.findById(cartItemId).populate('product')
 
-    if (!item) {
+    if (!currentItem) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Item não encontrado',
       })
     }
 
-    return item
-  } catch {
+    const product = currentItem.product as any
+    const variant = product?.variants?.find((item: any) => item.name === currentItem.variantName)
+    if (variant && quantity > variant.quantity) {
+      throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente para esta variação' })
+    }
+    if (!variant && product && quantity > product.quantity) {
+      throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente' })
+    }
+
+    currentItem.quantity = quantity
+    await currentItem.save()
+
+    return currentItem
+  } catch (error: any) {
+    if (error.statusCode) throw error
     throw createError({
       statusCode: 500,
       statusMessage: 'Erro ao atualizar item',

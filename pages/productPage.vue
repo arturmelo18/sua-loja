@@ -155,6 +155,11 @@ const handleSave = async () => {
 
     const body = {
       ...state.product,
+      store: state.product.store || authStore.user?.store,
+      active: state.product.published,
+      quantity: state.product.variants?.length
+        ? totalVariantQuantity.value
+        : state.product.quantity,
       price: state.isNew
         ? Math.round(state.product.price * 100)   // novo: converte reais → centavos
         : state.product.price,                     // edição: já está em centavos

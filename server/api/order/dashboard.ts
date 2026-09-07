@@ -1,7 +1,7 @@
 import { OrderSchema } from '~/server/models/order'
 
 export default defineEventHandler(async (event) => {
-    const { startDate, endDate, productId, status } = getQuery(event)
+    const { startDate, endDate, productId, status, store } = getQuery(event)
 
     const dateFilter: any = {}
     if (startDate) dateFilter.$gte = new Date(startDate as string)
@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     const matchStage: any = {}
     if (Object.keys(dateFilter).length) matchStage.createdAt = dateFilter
     if (status) matchStage.status = status
+    if (store) matchStage.store = String(store).replace(/^@/, '').toLowerCase()
 
     // ── 1. Vendas por dia (linha do tempo) ──────────────────
     const salesByDay = await OrderSchema.aggregate([
