@@ -43,6 +43,10 @@ export async function createAbacatePayProduct(payload: ProductPayload) {
     ? { imageUrl }
     : {}
 
+  if (process.env.NODE_ENV === 'test') {
+    return { data: { id: `mocked-abacatepay-id-${Date.now()}`, url: 'https://mocked-abacatepay.com/checkout/123' } }
+  }
+
   try {
     return await AbacatePayConnector.post('/products/create', {
       ...basePayload,

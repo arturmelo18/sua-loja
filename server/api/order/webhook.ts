@@ -52,9 +52,11 @@ export default defineEventHandler(async (event) => {
     await product.save()
 
     if (product.abacatePayId) {
-      await AbacatePayConnector.delete('/products/delete', {
-        id: product.abacatePayId,
-      })
+      if (process.env.NODE_ENV !== 'test') {
+        await AbacatePayConnector.delete('/products/delete', {
+          id: product.abacatePayId,
+        })
+      }
     }
 
     const abacateProduct = await createAbacatePayProduct({

@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const currentItem = await CartItemSchema.findById(cartItemId).populate('product')
+    const currentItem = await CartItemSchema.findById(cartItemId).lean()
 
     if (!currentItem) {
       throw createError({
@@ -28,15 +28,18 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const currentItem = await CartItemSchema.findById(cartItemId).lean()
     const product = currentItem ? await ProductSchema.findById(currentItem.product).lean() : null
     const variant = product?.variants?.find(item => item.name === currentItem?.variantName)
+    
     if (variant && quantity > variant.quantity) {
       throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente para esta variação' })
     }
 
-    return item
-  } catch {
+    const updatedItem = await CartItemSchema.findByIdAndUpdate(cartItemId, { quantity }, { new: true }).populate('product')
+
+    return updatedItem
+  } catch (error: any) {
+    if (error.statusCode) throw error
     throw createError({
       statusCode: 500,
       statusMessage: 'Erro ao atualizar item',
