@@ -51,6 +51,7 @@ function goToDetailView() {
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease;
+  cursor: pointer;
 }
 
 .product-card:not(.product-unavailable):hover {

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen bg-cream" :style="{ '--store-color': store?.color || '#7A1F2E' }">
+  <div class="min-h-screen bg-cream" :style="{ '--store-color': store?.color || '#7A1F2E' }">
     <nav-bar />
 
     <div v-if="isLoading" class="flex justify-center items-center h-[50vh]">
@@ -261,7 +261,21 @@ watch(
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 </style>
