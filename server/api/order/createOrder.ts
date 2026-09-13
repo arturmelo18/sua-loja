@@ -55,15 +55,21 @@ export default defineEventHandler(async (event) => {
       || getRequestURL(event).origin
   ).replace(/\/$/, '')
 
-  const abacateResponse = await AbacatePayConnector.post('/checkouts/create', {
-    externalId,
-    items: items.map((i: any) => ({
-      id: i.product.abacatePayId,
-      quantity: i.quantity,
-    })),
-    completionUrl: `${appUrl}/checkout/success?externalId=${encodeURIComponent(externalId)}`,
-    returnUrl: `${appUrl}/cart`,
-  })
+  let abacateResponse
+  
+  if (process.env.NODE_ENV === 'test') {
+    abacateResponse = { data: { id: `mock-checkout-id-${Date.now()}`, url: 'https://mock.abacatepay.com/checkout' } }
+  } else {
+    abacateResponse = await AbacatePayConnector.post('/checkouts/create', {
+      externalId,
+      items: items.map((i: any) => ({
+        id: i.product.abacatePayId,
+        quantity: i.quantity,
+      })),
+      completionUrl: `${appUrl}/checkout/success?externalId=${encodeURIComponent(externalId)}`,
+      returnUrl: `${appUrl}/cart`,
+    })
+  }
 
   if (!abacateResponse?.data) {
     throw createError({ statusCode: 500, statusMessage: 'Erro ao criar checkout na AbacatePay' })

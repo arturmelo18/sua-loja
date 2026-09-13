@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest"
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.1.5",
@@ -15,7 +16,6 @@
     "@nuxt/ui": "^4.5.0",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
     "@pinia/nuxt": "^0.11.3",
-    "bcrypt": "^6.0.0",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
     "element-plus": "^2.13.3",
@@ -23,11 +23,20 @@
     "nuxt-mongoose": "^1.0.6",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.2.1",
-    "vue": "^3.5.28",
     "vue-router": "^4.6.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0"
+    "@nuxt/test-utils": "^4.3.2",
+    "@types/bcrypt": "^6.0.0",
+    "@vue/test-utils": "^2.5.0",
+    "bcrypt": "^6.0.0",
+    "happy-dom": "^20.14.5",
+    "mongodb-memory-server": "^11.2.0",
+    "mongoose": "^9.10.0",
+    "node-fetch": "^3.3.2",
+    "vitest": "^5.0.0",
+    "vitest-environment-nuxt": "^2.0.0",
+    "vue": "^3.5.42"
   }
 }
