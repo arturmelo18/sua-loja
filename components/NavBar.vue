@@ -13,49 +13,51 @@
         <i class="uil uil-shopping-cart-alt"></i>
       </el-button>
 
-      <el-dropdown>
-        <el-button text type="info">
-          <i class="uil uil-bars"></i>
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu class="flex flex-col items-start" v-if="authStore.getUser">
-            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
-              <i class="uil uil-apps"></i>
-              <span>Todos os produtos</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/userPage')">
-              <i class="uil uil-user"></i>
-              <span>Minha Conta</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/myOrders')">
-              <i class="uil uil-shopping-bag"></i>
-              <span>Meus pedidos</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/adminPage')" v-if="isAdmin && !isSuperAdmin && !isMobile">
-              <i class="uil uil-setting"></i>
-              <span>Administração da loja</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/superAdminPage')" v-if="isSuperAdmin && !isMobile">
-              <i class="uil uil-shield-check"></i>
-              <span>Administração da plataforma</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="logout">
-              <i class="uil uil-signout"></i>
-              <span>Sair</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-          <el-dropdown-menu class="flex flex-col items-start" v-else>
-            <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
-              <i class="uil uil-apps"></i>
-              <span>Todos os produtos</span>
-            </el-dropdown-item>
-            <el-dropdown-item class="w-full" @click="navigateTo('/loginPage')">
-              <i class="uil uil-signin"></i>
-              <span>Entrar</span>
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <ClientOnly>
+        <el-dropdown>
+          <el-button text type="info">
+            <i class="uil uil-bars"></i>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu class="flex flex-col items-start" v-if="authStore.getUser">
+              <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
+                <i class="uil uil-apps"></i>
+                <span>Todos os produtos</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/userPage')">
+                <i class="uil uil-user"></i>
+                <span>Minha Conta</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/myOrders')">
+                <i class="uil uil-shopping-bag"></i>
+                <span>Meus pedidos</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/adminPage')" v-if="authStore.isAdmin && !authStore.isSuperAdmin && !isMobile">
+                <i class="uil uil-setting"></i>
+                <span>Administração da loja</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/superAdminPage')" v-if="authStore.isSuperAdmin && !isMobile">
+                <i class="uil uil-shield-check"></i>
+                <span>Administração da plataforma</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="logout">
+                <i class="uil uil-signout"></i>
+                <span>Sair</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+            <el-dropdown-menu class="flex flex-col items-start" v-else>
+              <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
+                <i class="uil uil-apps"></i>
+                <span>Todos os produtos</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/loginPage')">
+                <i class="uil uil-signin"></i>
+                <span>Entrar</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </ClientOnly>
     </div>
   </nav>
 </template>
@@ -95,12 +97,6 @@ const logout = () => {
   ElMessage.success('O usuário saiu da conta com sucesso!')
   navigateTo('/')
 }
-
-const isAdmin = computed(() => {
-  return authStore.isAdmin
-})
-
-const isSuperAdmin = computed(() => authStore.isSuperAdmin)
 </script>
 
 <style scoped>
