@@ -25,11 +25,11 @@ export default defineEventHandler(async (event) => {
       })
 
     return cart ?? null
-  } catch (e) {
-    console.error('Erro getCart:', e)
+  } catch (error: any) {
+    console.error('Erro getCart:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Erro ao buscar carrinho',
+      statusMessage: `Erro ao buscar carrinho: ${error.message}`,
     })
   }
 })

@@ -29,11 +29,11 @@ export default defineEventHandler(async (event) => {
         totalPages: Math.ceil(total / limit)
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao buscar a lista de produtos:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Erro interno do servidor ao buscar produtos.'
+      statusMessage: `Erro interno do servidor ao buscar produtos.: ${error.message}`
     })
   }
 })

@@ -38,8 +38,8 @@ export default defineEventHandler(async (event) => {
         await UserSchema.findByIdAndUpdate(String(ownerId), { store: normalizedStore })
 
         return store
-    } catch (e) {
-        console.error(e)
-        throw createError({ statusCode: 500, statusMessage: 'Erro ao atualizar loja' })
+    } catch (error: any) {
+        console.error(error)
+        throw createError({ statusCode: 500, statusMessage: `Erro ao atualizar loja: ${error.message}` })
     }
 })

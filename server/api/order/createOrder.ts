@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (!abacateResponse?.data) {
-    throw createError({ statusCode: 500, statusMessage: 'Erro ao criar checkout na AbacatePay' })
+    throw createError({ statusCode: 500, statusMessage: `Erro ao criar checkout na AbacatePay: ${error.message}` })
   }
 
   const order = await OrderSchema.create({

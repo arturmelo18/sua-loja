@@ -31,7 +31,17 @@ export default defineEventHandler(async (event) => {
 
     } catch (error: any) {
         if (error.statusCode) throw error
-        console.error('Erro ao inativar o produto:', error.message)
+        
+    if (error.name === 'ValidationError') {
+      throw createError({ statusCode: 400, statusMessage: `Erro de validação: ${error.message}` })
+    }
+    if (error.code === 11000) {
+      throw createError({ statusCode: 409, statusMessage: `Conflito: Registro já existente no banco de dados.` })
+    }
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      throw createError({ statusCode: 401, statusMessage: `Não autorizado: Token inválido ou expirado.` })
+    }
+    console.error('Erro ao inativar o produto:', error.message)
 
         throw createError({
             statusCode: error.statusCode || 500,

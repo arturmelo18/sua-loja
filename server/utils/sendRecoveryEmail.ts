@@ -4,7 +4,7 @@ export async function sendRecoveryEmail(email: string, code: string) {
   if (!config.resendApiKey || !config.resendFromEmail) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'O envio de e-mail ainda não está configurado no servidor.',
+      statusMessage: `O envio de e-mail ainda não está configurado no servidor.: ${error.message}`,
     })
   }
 

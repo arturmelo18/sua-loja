@@ -15,7 +15,7 @@ export async function generateCdnImage(img: string): Promise<{ url: string, publ
     if (!uploadResponse?.secure_url || !uploadResponse?.public_id) {
       throw createError({
         statusCode: 500,
-        statusMessage: 'Erro ao processar imagem no CDN.',
+        statusMessage: `Erro ao processar imagem no CDN.: ${error.message}`,
       })
     }
 
