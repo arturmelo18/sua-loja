@@ -21,12 +21,20 @@
           <div class="order-head">
             <div class="order-head-left">
               <span class="sale-code">{{ order.saleCode }}</span>
-              <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+              <span class="order-date">{{ formatDate(order.createdAt) }} • Loja: /{{ order.store }}</span>
             </div>
             <div class="order-head-right">
               <span :class="['badge', `badge-${order.status.toLowerCase()}`]">
                 {{ statusLabel(order.status) }}
               </span>
+              <button 
+                v-if="order.status === 'PENDING' && authStore.isSuperAdmin"
+                class="btn btn-dark btn-sm ml-2" 
+                @click="simulatePayment(order.externalId)"
+                :disabled="isSimulating === order.externalId"
+              >
+                {{ isSimulating === order.externalId ? 'Simulando...' : 'Simular Pgto (Dev)' }}
+              </button>
               <span :class="['badge', order.readyForPickup ? 'badge-pickup-ready' : 'badge-pickup-pending']">
                 {{ order.readyForPickup ? '✓ Pronto para retirada' : 'Aguardando retirada' }}
               </span>
@@ -69,10 +77,10 @@ import type { Order } from '~/types/Order'
 const authStore = useAuthStore()
 const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false)
+const isSimulating = ref('')
 const orders = ref<Order[]>([])
 
-onMounted(async () => {
-  await loadStoreTheme({ ownerId: authStore.getUser?._id })
+async function fetchOrders() {
   isLoading.value = true
   try {
     orders.value = await $fetch<Order[]>('/api/order/listMyOrders', {
@@ -83,6 +91,27 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+async function simulatePayment(externalId: string) {
+  isSimulating.value = externalId
+  try {
+    await $fetch('/api/order/simulateWebhook', {
+      method: 'POST',
+      body: { externalId }
+    })
+    ElMessage.success('Pagamento simulado com sucesso (Webhook acionado)!')
+    await fetchOrders()
+  } catch (error: any) {
+    ElMessage.error(error.statusMessage || 'Erro ao simular pagamento')
+  } finally {
+    isSimulating.value = ''
+  }
+}
+
+onMounted(async () => {
+  await loadStoreTheme({ ownerId: authStore.getUser?._id })
+  await fetchOrders()
 })
 
 const formatPrice = (v: number) =>

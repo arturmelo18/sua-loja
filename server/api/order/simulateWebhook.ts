@@ -1,17 +1,15 @@
 import { fulfillOrder } from '~/server/helpers/fulfillOrder'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
+  const { externalId } = await readBody(event)
 
-  if (body.event !== 'checkout.completed') {
-    return { received: true }
+  if (!externalId) {
+    throw createError({ statusCode: 400, statusMessage: 'externalId é obrigatório' })
   }
-
-  const { externalId } = body.data.checkout
 
   try {
     await fulfillOrder(externalId)
-    return { received: true }
+    return { success: true, message: 'Pedido atualizado para PAID com sucesso (Simulação de Webhook)' }
   } catch (error: any) {
     throw createError({ statusCode: 500, statusMessage: error.message })
   }
