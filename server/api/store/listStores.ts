@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const skip = (page - 1) * limit
 
   const [stores, total] = await Promise.all([
-    StoreSchema.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    StoreSchema.find({active: true}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     StoreSchema.countDocuments(),
   ])
 

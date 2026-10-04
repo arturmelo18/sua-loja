@@ -12,7 +12,7 @@
       <div v-else-if="!orders.length" class="empty-state">
         <i class="ti ti-clipboard-off"></i>
         <p>Você ainda não fez nenhum pedido</p>
-        <button class="btn btn-dark" @click="navigateTo('/')">Ver Produtos</button>
+        <button class="btn btn-dark" @click="navigateTo('/userPage')">Explorar Lojas</button>
       </div>
 
       <div v-else class="orders-list">

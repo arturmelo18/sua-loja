@@ -7,95 +7,110 @@
         <div class="admin-layout-body">
             <main class="admin-main-content">
                 <div class="page-header-row">
-                    <h2>Gerenciar Cadastro</h2>
+                    <h2>Minha Conta</h2>
                     <div class="header-actions">
-                      <el-button class="store-button" @click="navigateTo('/storeSettings')">
-                        {{ authStore.getUser?.store ? 'Gerenciar minha loja' : 'Criar minha loja' }}
-                      </el-button>
-                        <el-button class="btn-secondary" @click="navigateTo('/')">Cancelar</el-button>
-                        <el-button class="btn-primary" :disabled="isLoading" @click="handleSaveProfile">
-                            {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
-                        </el-button>
+                        <el-button class="btn-secondary" @click="navigateTo('/')">Voltar para a página inicial</el-button>
                     </div>
                 </div>
 
-                <section class="content-card">
-                    <!-- Coluna Esquerda -->
-                    <div class="form-column">
-                        <span class="column-title">Informações Pessoais</span>
-
-                        <div class="form-item">
-                            <label for="user-name">Nome Completo</label>
-                            <el-input id="user-name" placeholder="Ex: Artur Silva" v-model="state.name"/>
-                        </div>
-
-                        <div class="form-item">
-                            <label for="user-email">E-mail de Acesso</label>
-                            <el-input id="user-email" type="email" placeholder="nome@exemplo.com" v-model="state.email"/>
-                        </div>
-
-                        <span class="column-title separation-title">Segurança</span>
-
-                        <div class="form-row">
-                            <div class="form-item size-half">
-                                <label for="user-password">Nova Senha</label>
-                                <el-input id="user-password" type="password" show-password placeholder="••••••••" v-model="state.password"/>
-                                <span class="field-hint">Deixe em branco para manter a senha atual</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Coluna Direita -->
-                    <div class="form-column">
-                        <span class="column-title">Endereço</span>
-
-                        <div class="form-row">
-                            <div class="form-item size-quarter">
-                                <label for="user-zipcode">CEP</label>
-                                <el-input
-                                    id="user-zipcode"
-                                    placeholder="00000-000"
-                                    maxlength="9"
-                                    v-model="state.zipCode"
-                                    @input="formatZipCode"
-                                    @blur="searchAddress"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-item size-small">
-                                <label for="user-state">Estado</label>
-                                <el-input id="user-state" placeholder="SP" v-model="state.uf"/>
+                <el-tabs v-model="activeTab" class="user-dashboard-tabs">
+                  <el-tab-pane label="Meus Dados" name="profile">
+                    <section class="content-card mt-4">
+                        <div class="form-column">
+                            <span class="column-title">Informações Pessoais</span>
+                            <div class="form-item">
+                                <label for="user-name">Nome Completo</label>
+                                <el-input id="user-name" placeholder="Ex: Artur Silva" v-model="state.name"/>
                             </div>
                             <div class="form-item">
-                                <label for="user-city">Cidade</label>
-                                <el-input id="user-city" placeholder="São Paulo" v-model="state.city"/>
+                                <label for="user-email">E-mail de Acesso</label>
+                                <el-input id="user-email" type="email" placeholder="nome@exemplo.com" v-model="state.email"/>
+                            </div>
+                            <span class="column-title separation-title">Segurança</span>
+                            <div class="form-row">
+                                <div class="form-item size-half">
+                                    <label for="user-password">Nova Senha</label>
+                                    <el-input id="user-password" type="password" show-password placeholder="••••••••" v-model="state.password"/>
+                                    <span class="field-hint">Deixe em branco para manter a senha atual</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="form-item">
-                            <label for="user-neighborhood">Bairro</label>
-                            <el-input id="user-neighborhood" placeholder="Centro" v-model="state.neighborhood"/>
-                        </div>
-
-                        <div class="form-item">
-                            <label for="user-street">Rua</label>
-                            <el-input id="user-street" placeholder="Rua Principal" v-model="state.street"/>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-item size-small">
-                                <label for="user-number">Número</label>
-                                <el-input id="user-number" placeholder="123" v-model="state.number"/>
+                        <div class="form-column">
+                            <span class="column-title">Endereço</span>
+                            <div class="form-row">
+                                <div class="form-item size-quarter">
+                                    <label for="user-zipcode">CEP</label>
+                                    <el-input id="user-zipcode" placeholder="00000-000" maxlength="9" v-model="state.zipCode" @input="formatZipCode" @blur="searchAddress"/>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-item size-small">
+                                    <label for="user-state">Estado</label>
+                                    <el-input id="user-state" placeholder="SP" v-model="state.uf"/>
+                                </div>
+                                <div class="form-item">
+                                    <label for="user-city">Cidade</label>
+                                    <el-input id="user-city" placeholder="São Paulo" v-model="state.city"/>
+                                </div>
                             </div>
                             <div class="form-item">
-                                <label for="user-complement">Complemento <span class="optional-label">(opcional)</span></label>
-                                <el-input id="user-complement" placeholder="Apt 101" v-model="state.complement"/>
+                                <label for="user-neighborhood">Bairro</label>
+                                <el-input id="user-neighborhood" placeholder="Centro" v-model="state.neighborhood"/>
+                            </div>
+                            <div class="form-item">
+                                <label for="user-street">Rua</label>
+                                <el-input id="user-street" placeholder="Rua Principal" v-model="state.street"/>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-item size-small">
+                                    <label for="user-number">Número</label>
+                                    <el-input id="user-number" placeholder="123" v-model="state.number"/>
+                                </div>
+                                <div class="form-item">
+                                    <label for="user-complement">Complemento <span class="optional-label">(opcional)</span></label>
+                                    <el-input id="user-complement" placeholder="Apt 101" v-model="state.complement"/>
+                                </div>
                             </div>
                         </div>
+                    </section>
+                    <div class="flex justify-end mt-4">
+                      <el-button class="btn-primary" :disabled="isLoading" @click="handleSaveProfile">
+                          {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
+                      </el-button>
                     </div>
-                </section>
+                  </el-tab-pane>
+
+                  <el-tab-pane label="Minha Loja" name="store">
+                    <section class="content-card mt-4 flex flex-col items-center justify-center p-12 text-center">
+                      <h3 class="text-2xl font-serif text-[var(--store-color)] mb-4">Administre seu Marketplace</h3>
+                      <p class="text-gray-600 mb-8 max-w-lg">
+                        {{ hasStore ? 'Você já possui uma loja configurada. Acesse as configurações para gerenciar produtos, temas e pedidos.' : 'Crie sua própria loja e comece a vender seus produtos agora mesmo.' }}
+                      </p>
+                      <el-button class="store-button px-8 py-4 text-lg" @click="navigateTo('/storeSettings')">
+                        {{ hasStore ? 'Acessar o Painel da Loja' : 'Criar minha loja agora' }}
+                      </el-button>
+                    </section>
+                  </el-tab-pane>
+
+                  <el-tab-pane label="Explorar Lojas" name="explore">
+                    <div class="mt-4" v-loading="loadingStores">
+                      <div v-if="stores.length === 0" class="text-center py-12 text-gray-500">
+                        Nenhuma loja encontrada no momento.
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" v-else>
+                        <div v-for="store in stores" :key="store._id" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer bg-white" @click="navigateTo(`/${store.store}`)">
+                          <div class="h-32 w-full flex items-center justify-center bg-cover bg-center" :style="{ backgroundColor: store.color || '#7A1F2E', backgroundImage: store.image ? `url(${store.image})` : 'none' }">
+                            <h3 v-if="!store.image" class="text-white text-xl font-serif font-bold tracking-wider">{{ store.name || store.store }}</h3>
+                          </div>
+                          <div class="store-description" v-if="store.description">
+                            <p class="text-sm text-gray-700 line-clamp-2" v-if="store.description">{{ store.description }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </el-tab-pane>
+                </el-tabs>
             </main>
         </div>
         <LofFooter />
@@ -124,11 +139,43 @@ const authStore = useAuthStore()
 const { storeColor, loadStoreTheme } = useStoreTheme()
 const isLoading = ref(false)
 
+const activeTab = ref('profile')
+const stores = ref<any[]>([])
+const loadingStores = ref(false)
+const hasStore = ref(false)
+
+async function checkOwnerStore(userId: string) {
+  try {
+    const store = await $fetch<{ store: string } | null>('/api/store/getStore', {
+      params: { ownerId: userId },
+    })
+    if (store?.store) {
+      hasStore.value = true
+    }
+  } catch (e) {
+    //
+  }
+}
+
+async function fetchStores() {
+  loadingStores.value = true
+  try {
+    const res: any = await $fetch('/api/store/listStores')
+    if (res?.data) {
+      stores.value = res.data
+    }
+  } catch (err) {
+    ElMessage.error('Erro ao buscar lojas disponíveis')
+  } finally {
+    loadingStores.value = false
+  }
+}
+
 onMounted(() => {
     const user = authStore.getUser
     if (!user) return
 
-  loadStoreTheme({ ownerId: user._id })
+    loadStoreTheme({ ownerId: user._id })
 
     state._id = user._id
     state.name = user.name
@@ -140,6 +187,9 @@ onMounted(() => {
     state.street = user.address?.street ?? ''
     state.number = user.address?.number ?? ''
     state.complement = user.address?.complement ?? ''
+
+    fetchStores()
+    checkOwnerStore(user._id)
 })
 
 const formatZipCode = (value: string) => {
@@ -245,11 +295,25 @@ definePageMeta({ middleware: 'auth' })
   box-sizing: border-box;
 }
 
+.user-dashboard-tabs {
+  margin-top: 1rem;
+}
+
+:deep(.el-tabs__item.is-active) {
+  color: var(--store-color, #7A1F2E) !important;
+}
+:deep(.el-tabs__active-bar) {
+  background-color: var(--store-color, #7A1F2E) !important;
+}
+:deep(.el-tabs__item:hover) {
+  color: var(--store-color, #7A1F2E) !important;
+}
+
 .page-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .page-header-row h2 {
@@ -364,6 +428,11 @@ definePageMeta({ middleware: 'auth' })
 :deep(.el-input__wrapper.is-focus) {
   box-shadow: 0 0 0 1px var(--store-color, #7A1F2E) inset, 0 0 0 3px color-mix(in srgb, var(--store-color, #7A1F2E) 10%, transparent) !important;
   background-color: #ffffff;
+}
+
+.store-description {
+  display: flex;
+  justify-content: center;
 }
 
 @media (max-width: 992px) {

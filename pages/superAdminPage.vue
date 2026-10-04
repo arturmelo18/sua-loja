@@ -65,7 +65,7 @@
       <section v-else-if="section === 'users'" class="panel">
         <div class="panel-heading"><h2>Usuários</h2><span>{{ userTotal }} resultados</span></div>
         <div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Loja</th><th>Perfil</th></tr></thead>
-          <tbody><tr v-for="user in users" :key="user._id"><td>{{ user.name }}</td><td>{{ user.email }}</td><td>{{ user.store || '-' }}</td><td><span class="status active">{{ user.kind }}</span></td></tr></tbody>
+          <tbody><tr v-for="user in users" :key="user._id"><td>{{ user.name }}</td><td>{{ user.email }}</td><td><span class="status active">{{ user.kind }}</span></td></tr></tbody>
         </table></div>
       </section>
 
@@ -121,7 +121,7 @@ async function loadProducts() {
 
 async function loadUsers() {
   const result = await $fetch<{ data: User[]; pagination: { total: number } }>('/api/user/listUsers', {
-    params: { page: 1, limit: 100, store: selectedStore.value || undefined },
+    params: { page: 1, limit: 100 },
   })
   users.value = result.data
   userTotal.value = result.pagination.total

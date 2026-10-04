@@ -6,10 +6,15 @@
         <a href="#como-funciona">Como funciona</a>
         <a href="#loja-demo">Loja demo</a>
       </nav>
-      <div class="landing-nav__actions">
-        <button class="landing-login" type="button" @click="navigateTo('/loginPage')">Entrar</button>
-        <button class="landing-create" type="button" @click="navigateTo('/createUser?intent=store')">Criar minha loja</button>
-      </div>
+      <ClientOnly>
+        <div class="landing-nav__actions" v-if="!authStore.getUser">
+          <button class="landing-login" type="button" @click="navigateTo('/loginPage')">Entrar</button>
+          <button class="landing-create" type="button" @click="navigateTo('/createUser?intent=store')">Criar minha loja</button>
+        </div>
+        <div class="landing-nav__actions" v-else>
+          <button class="landing-create" type="button" @click="navigateTo(authStore.isSuperAdmin ? '/superAdminPage' : '/userPage')">Administre sua conta</button>
+        </div>
+      </ClientOnly>
     </header>
 
     <main>
@@ -21,14 +26,21 @@
             O Sua Loja ajuda você a transformar seus produtos em uma vitrine bonita,
             simples de administrar e pronta para vender.
           </p>
-          <div class="hero-actions">
-            <button class="primary-button" type="button" @click="navigateTo('/createUser?intent=store')">
-              Criar minha loja
-            </button>
-            <button class="text-button" type="button" @click="navigateTo('/loginPage')">
-              Já tenho uma conta <span>→</span>
-            </button>
-          </div>
+          <ClientOnly>
+            <div class="hero-actions" v-if="!authStore.getUser">
+              <button class="primary-button" type="button" @click="navigateTo('/createUser?intent=store')">
+                Criar minha loja
+              </button>
+              <button class="text-button" type="button" @click="navigateTo('/loginPage')">
+                Já tenho uma conta <span>→</span>
+              </button>
+            </div>
+            <div class="hero-actions" v-else>
+              <button class="primary-button" type="button" @click="navigateTo(authStore.isSuperAdmin ? '/superAdminPage' : '/userPage')">
+                Ir para minha conta
+              </button>
+            </div>
+          </ClientOnly>
         </div>
 
         <div class="demo-window" aria-label="Prévia de uma loja criada no Sua Loja">
@@ -84,29 +96,9 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 
-onMounted(async () => {
-  const user = authStore.getUser
-
-  if (user?.kind === 'superadmin') {
-    navigateTo('/superAdminPage')
-    return
-  }
-
-  if (user?.store) {
-    try {
-      const store = await $fetch<{ store: string; active?: boolean } | null>('/api/store/getStore', {
-        params: { ownerId: user._id },
-      })
-
-      if (store?.active !== false && store?.store) {
-        navigateTo(`/${encodeURIComponent(store.store)}`)
-      } else {
-        navigateTo('/storeSettings')
-      }
-    } catch {
-      navigateTo('/storeSettings')
-    }
-  }
+onMounted(() => {
+  // O usuário agora pode permanecer na landing page se desejar.
+  // A barra de navegação refletirá o status de login.
 })
 
 const demoProducts = [

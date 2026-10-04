@@ -14,7 +14,7 @@
             <div v-else-if="!state.cart?.items?.length" class="empty-state">
                 <i class="ti ti-shopping-cart-off"></i>
                 <p>Seu carrinho está vazio</p>
-                <el-button class="btn-primary" @click="navigateTo('/')">Ver Produtos</el-button>
+                <el-button class="btn-primary mx-auto w-auto px-8" @click="navigateTo(backToStorePath)">Ver Produtos</el-button>
             </div>
 
             <div v-else class="cart-layout">
@@ -106,6 +106,14 @@ const state = reactive({
     cart: null as Cart | null,
 })
 
+const route = useRoute()
+const backToStorePath = computed(() => {
+    const storeQuery = route.query.store as string
+    if (storeQuery) return `/${storeQuery}`
+    if (state.cart && state.cart.store) return `/${state.cart.store}`
+    return '/userPage'
+})
+
 const totalItems = computed(() =>
     state.cart?.items.reduce((acc, item) => acc + item.quantity, 0) ?? 0
 )
@@ -143,17 +151,6 @@ onMounted(async () => {
         console.log('cart:', JSON.stringify(state.cart?.items?.[0], null, 2))
     } catch (e) {
         console.error('erro getCart:', e)
-    }
-
-    if (!state.cart) {
-        try {
-            state.cart = await $fetch('/api/cart/createCart', {
-                method: 'POST',
-                body: { userId, store: authStore.getUser?.store },
-            })
-        } catch (e) {
-            console.error('Erro ao criar carrinho:', e)
-        }
     }
 
     if (state.cart) authStore.setCart(state.cart)

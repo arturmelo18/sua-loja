@@ -102,9 +102,7 @@ async function authUser() {
       ? route.query.next
       : response.kind === 'superadmin'
         ? '/superAdminPage'
-        : response.store
-          ? `/${encodeURIComponent(response.store)}`
-          : '/'
+        : '/userPage'
     await navigateTo(nextPath)
   }
   catch (error: any) {

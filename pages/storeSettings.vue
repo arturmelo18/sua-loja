@@ -38,6 +38,21 @@
               </div>
             </label>
           </div>
+          <div class="field-grid">
+            <label class="field">
+              <span>Descrição (Opcional)</span>
+              <textarea v-model="storeForm.description" rows="2" placeholder="Uma breve descrição sobre a loja para mostrar aos clientes."></textarea>
+            </label>
+            <label class="field">
+              <span>Imagem / Logo (Opcional)</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                @change="handleStoreImage"
+              >
+              <img v-if="storeForm.image" class="slide-preview" :src="storeForm.image" alt="Prévia da logo">
+            </label>
+          </div>
 
           <label class="field color-field">
             <span>Cor principal</span>
@@ -92,7 +107,7 @@
         <div class="form-actions">
           <span v-if="errorMessage" class="error-message">{{ errorMessage }}</span>
           <button class="save-button" type="submit" :disabled="isSaving">
-            {{ isSaving ? 'Enviando...' : 'Enviar para aprovação' }}
+            {{ isSaving ? (approvalStatus !== undefined ? 'Atualizando...' : 'Enviando...') : (approvalStatus !== undefined ? 'Atualizar loja' : 'Solicitar aprovação') }}
           </button>
         </div>
       </form>
@@ -112,6 +127,8 @@ const defaultColor = '#7A1F2E'
 const storeForm = reactive({
   name: '',
   store: '',
+  description: '',
+  image: '',
   color: defaultColor,
   slides: [{ title: '', description: '', image: '' }] as StoreSlide[],
 })
@@ -122,6 +139,32 @@ const approvalMessage = computed(() => {
   if (approvalStatus.value === 'rejected') return 'Sua loja foi recusada. Atualize os dados e envie novamente para análise.'
   return ''
 })
+
+function handleStoreImage(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) return
+
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    errorMessage.value = 'Escolha uma imagem PNG, JPG ou WEBP.'
+    input.value = ''
+    return
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    errorMessage.value = 'A imagem não pode ultrapassar 2MB.'
+    input.value = ''
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    storeForm.image = e.target?.result as string
+    errorMessage.value = ''
+  }
+  reader.readAsDataURL(file)
+}
 
 async function loadStore() {
   const ownerId = authStore.user?._id
@@ -134,6 +177,8 @@ async function loadStore() {
   if (savedStore) {
     storeForm.name = savedStore.name
     storeForm.store = savedStore.store
+    storeForm.description = savedStore.description || ''
+    storeForm.image = savedStore.image || ''
     storeForm.color = savedStore.color || defaultColor
     storeForm.slides = savedStore.slides.length ? savedStore.slides : storeForm.slides
     approvalStatus.value = savedStore.approvalStatus
@@ -195,16 +240,18 @@ async function saveStore() {
         ownerId,
         name: storeForm.name,
         store: storeForm.store,
+        description: storeForm.description,
+        image: storeForm.image,
         color: storeForm.color,
         slides: storeForm.slides,
       },
     })
 
-    if (authStore.user) authStore.setUser({ ...authStore.user, store: savedStore.store })
-
     if (savedStore.approvalStatus === 'approved') {
+      ElMessage.success('Loja atualizada com sucesso!')
       await navigateTo(`/${savedStore.store}`)
     } else {
+      ElMessage.success(approvalStatus.value === undefined ? 'Loja enviada para aprovação!' : 'Loja atualizada com sucesso!')
       approvalStatus.value = savedStore.approvalStatus || 'pending'
       await navigateTo('/userPage')
     }

@@ -3,7 +3,7 @@ import { UserSchema } from '~/server/models/user'
 import { generateCdnImage } from '~/server/helpers/generateCdnImage'
 
 export default defineEventHandler(async (event) => {
-    const { ownerId, name, store: storeSlug, color, slides } = await readBody(event)
+    const { ownerId, name, store: storeSlug, description, image, color, slides } = await readBody(event)
     const normalizedStore = String(storeSlug || '').trim().replace(/^@/, '').toLowerCase()
     const normalizedColor = String(color || '#7A1F2E').trim().toUpperCase()
 
@@ -16,6 +16,12 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
+        let finalImage = image || ''
+        if (finalImage.startsWith('data:')) {
+            const cdn = await generateCdnImage(finalImage)
+            finalImage = cdn.url
+        }
+
         const processedSlides = await Promise.all(
             slides.map(async (slide: any) => {
                 if (slide.image?.startsWith('data:')) {
@@ -31,11 +37,19 @@ export default defineEventHandler(async (event) => {
         const approvalStatus = isApproved ? 'approved' : 'pending'
         const store = await StoreSchema.findOneAndUpdate(
             { ownerId: String(ownerId) },
-            { ownerId: String(ownerId), name, store: normalizedStore, color: normalizedColor, slides: processedSlides, active: isApproved, approvalStatus },
+            { 
+                ownerId: String(ownerId), 
+                name, 
+                store: normalizedStore, 
+                description: description || '',
+                image: finalImage,
+                color: normalizedColor, 
+                slides: processedSlides, 
+                active: isApproved, 
+                approvalStatus 
+            },
             { new: true, upsert: true }
         )
-
-        await UserSchema.findByIdAndUpdate(String(ownerId), { store: normalizedStore })
 
         return store
     } catch (error: any) {

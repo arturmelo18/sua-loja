@@ -10,6 +10,8 @@ export interface Store {
     ownerId: string
     store: string
     name: string
+    description?: string
+    image?: string
     color?: string
     active: boolean
     approvalStatus?: 'pending' | 'approved' | 'rejected'

@@ -4,7 +4,7 @@
 
     <div class="modal-overlay open">
       <div class="modal-box product-modal-box">
-        <button class="modal-close-btn" @click="navigateTo('/')">×</button>
+        <button class="modal-close-btn" @click="navigateTo(state.product?.store ? `/${state.product.store}` : '/')">×</button>
 
         <div class="modal-img-side">
           <img

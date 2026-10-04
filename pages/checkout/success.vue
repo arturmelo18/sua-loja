@@ -13,7 +13,7 @@
             ? 'Seu pagamento foi confirmado e o carrinho foi atualizado.'
             : 'Seu pagamento está sendo processado. Você receberá uma confirmação assim que aprovado.' }}
         </p>
-        <button class="btn btn-dark" @click="navigateTo('/')">
+        <button class="btn btn-dark" @click="navigateTo('/userPage')">
           Continuar Comprando
         </button>
       </div>

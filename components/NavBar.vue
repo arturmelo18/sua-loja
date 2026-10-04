@@ -9,7 +9,7 @@
     </ul>
 
     <div class="nav-actions">
-      <el-button text type="info" @click="navigateTo('/cartPage')">
+      <el-button text type="info" @click="navigateTo('/cartPage' + (storeSlug ? '?store=' + storeSlug : ''))">
         <i class="uil uil-shopping-cart-alt"></i>
       </el-button>
 
@@ -67,7 +67,7 @@ const authStore = useAuthStore()
 const route = useRoute()
 const storeName = ref('Sua loja')
 const isMobile = ref(false)
-const storeSlug = computed(() => String(route.params.store || authStore.getUser?.store || '').replace(/^@/, ''))
+const storeSlug = computed(() => String(route.params.store || '').replace(/^@/, ''))
 const storePath = computed(() => storeSlug.value ? `/${storeSlug.value}` : '/')
 
 function updateIsMobile() {
@@ -78,13 +78,15 @@ onMounted(async () => {
   updateIsMobile()
   window.addEventListener('resize', updateIsMobile)
 
-  try {
-    const store = await $fetch<any>('/api/store/getStore', {
-      params: storeSlug.value ? { store: storeSlug.value } : undefined,
-    })
-    if (store?.name) storeName.value = store.name
-  } catch {
-    // mantém o fallback 'Fatecano'
+  if (storeSlug.value) {
+    try {
+      const store = await $fetch<any>('/api/store/getStore', {
+        params: { store: storeSlug.value },
+      })
+      if (store?.name) storeName.value = store.name
+    } catch {
+      // mantém o fallback 'Sua loja'
+    }
   }
 })
 

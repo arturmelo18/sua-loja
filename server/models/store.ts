@@ -17,6 +17,14 @@ export const StoreSchema = defineMongooseModel<Store>({
             type: String,
             required: true
         },
+        description: {
+            type: String,
+            default: ''
+        },
+        image: {
+            type: String,
+            default: ''
+        },
         color: {
             type: String,
             default: '#7A1F2E'
