@@ -41,7 +41,7 @@ function goToDetailView() {
   if (!props.product._id || !props.product.quantity) return  // ← bloqueia clique
   navigateTo({
     path: '/productDetailView',
-    query: { _id: props.product._id },
+    query: { _id: props.product._id, store: props.product.store },
   })
 }
 </script>

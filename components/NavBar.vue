@@ -5,7 +5,7 @@
     </div>
 
     <ul class="nav-links" id="nav-links-desktop">
-      <li><nuxt-link :to="storePath">Todos os produtos</nuxt-link></li>
+      <li v-if="storeSlug"><nuxt-link :to="storePath">Todos os produtos</nuxt-link></li>
     </ul>
 
     <div class="nav-actions">
@@ -20,7 +20,7 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu class="flex flex-col items-start" v-if="authStore.getUser">
-              <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
+              <el-dropdown-item class="w-full nav-links-mobile-item" v-if="storeSlug" @click="navigateTo(storePath)">
                 <i class="uil uil-apps"></i>
                 <span>Todos os produtos</span>
               </el-dropdown-item>
@@ -46,7 +46,7 @@
               </el-dropdown-item>
             </el-dropdown-menu>
             <el-dropdown-menu class="flex flex-col items-start" v-else>
-              <el-dropdown-item class="w-full nav-links-mobile-item" @click="navigateTo(storePath)">
+              <el-dropdown-item class="w-full nav-links-mobile-item" v-if="storeSlug" @click="navigateTo(storePath)">
                 <i class="uil uil-apps"></i>
                 <span>Todos os produtos</span>
               </el-dropdown-item>
@@ -67,7 +67,7 @@ const authStore = useAuthStore()
 const route = useRoute()
 const storeName = ref('Sua loja')
 const isMobile = ref(false)
-const storeSlug = computed(() => String(route.params.store || '').replace(/^@/, ''))
+const storeSlug = computed(() => String(route.params.store || route.query.store || '').replace(/^@/, ''))
 const storePath = computed(() => storeSlug.value ? `/${storeSlug.value}` : '/')
 
 function updateIsMobile() {
