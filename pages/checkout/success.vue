@@ -72,6 +72,19 @@ async function waitForPaymentConfirmation() {
 
 onMounted(async () => {
   await loadStoreTheme({ ownerId: authStore.getUser?._id })
+  
+  const userId = authStore.getUser?._id
+  if (userId) {
+    try {
+      await $fetch('/api/cart/clearCart', {
+        method: 'POST',
+        body: { userId }
+      })
+    } catch {
+      // Ignora erro
+    }
+  }
+  
   authStore.clearCart()
   await waitForPaymentConfirmation()
 })
