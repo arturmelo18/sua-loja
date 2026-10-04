@@ -35,7 +35,7 @@
           {{ isLoading ? 'Aguarde...' : 'Ir para Pagamento' }}
         </button>
 
-        <button class="btn btn-outline" @click="navigateTo('/cart')" style="width: 100%; margin-top: 10px;">
+        <button class="btn btn-outline" @click="navigateTo('/cartPage')" style="width: 100%; margin-top: 10px;">
           Voltar ao Carrinho
         </button>
       </div>

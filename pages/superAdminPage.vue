@@ -29,7 +29,11 @@
         </div>
       </div>
 
-      <section v-if="section === 'stores'" class="panel">
+      <section v-if="section === 'dashboard'" class="panel" style="padding:0; border:none; background:transparent;">
+        <AdminDashboard is-super-admin :global-store-filter="selectedStore" />
+      </section>
+
+      <section v-else-if="section === 'stores'" class="panel">
         <div class="panel-heading"><h2>Lojas</h2><span>{{ stores.length }} carregadas</span></div>
         <div class="table-wrap">
           <table>
@@ -84,7 +88,7 @@ import type { User } from '~/types/User'
 type ManagedStore = Store & { owner?: { name?: string; email?: string } }
 
 const authStore = useAuthStore()
-const section = ref<'stores' | 'products' | 'users' | 'orders'>('stores')
+const section = ref<'dashboard' | 'stores' | 'products' | 'users' | 'orders'>('dashboard')
 const selectedStore = ref('')
 const stores = ref<ManagedStore[]>([])
 const products = ref<Product[]>([])
@@ -95,6 +99,7 @@ const userTotal = ref(0)
 const orderTotal = ref(0)
 
 const tabs = [
+  { id: 'dashboard' as const, label: 'Dashboard' },
   { id: 'stores' as const, label: 'Lojas' },
   { id: 'products' as const, label: 'Produtos' },
   { id: 'users' as const, label: 'Usuários' },

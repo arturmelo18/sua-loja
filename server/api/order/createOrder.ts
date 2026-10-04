@@ -3,7 +3,7 @@ import { OrderSchema } from '~/server/models/order'
 import { AbacatePayConnector } from '~/server/connectors/AbacatePay/connector'
 import { generateSaleCode } from '~/server/utils/generateSaleCode'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event: any) => {
   const { cartId, userId, store } = await readBody(event)
   const config = useRuntimeConfig(event)
 
@@ -67,12 +67,12 @@ export default defineEventHandler(async (event) => {
         quantity: i.quantity,
       })),
       completionUrl: `${appUrl}/checkout/success?externalId=${encodeURIComponent(externalId)}`,
-      returnUrl: `${appUrl}/cart`,
+      returnUrl: `${appUrl}/cartPage`,
     })
   }
 
   if (!abacateResponse?.data) {
-    throw createError({ statusCode: 500, statusMessage: `Erro ao criar checkout na AbacatePay: ${error.message}` })
+    throw createError({ statusCode: 500, statusMessage: `Erro ao criar checkout na AbacatePay` })
   }
 
   const order = await OrderSchema.create({
