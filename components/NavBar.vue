@@ -67,27 +67,39 @@ const authStore = useAuthStore()
 const route = useRoute()
 const storeName = ref('Sua loja')
 const isMobile = ref(false)
-const storeSlug = computed(() => String(route.params.store || route.query.store || '').replace(/^@/, ''))
+const storeSlug = computed(() => {
+  const fromRoute = route.params.store || route.query.store
+  if (fromRoute) return String(fromRoute).replace(/^@/, '')
+  
+  const isCartOrCheckout = route.path.includes('/cartPage') || route.path.includes('/checkout')
+  if (isCartOrCheckout && authStore.cart?.store) return String(authStore.cart.store).replace(/^@/, '')
+  
+  return ''
+})
 const storePath = computed(() => storeSlug.value ? `/${storeSlug.value}` : '/')
 
 function updateIsMobile() {
   isMobile.value = window.innerWidth <= 768
 }
 
-onMounted(async () => {
-  updateIsMobile()
-  window.addEventListener('resize', updateIsMobile)
-
-  if (storeSlug.value) {
+watch(storeSlug, async (newSlug) => {
+  if (newSlug) {
     try {
       const store = await $fetch<any>('/api/store/getStore', {
-        params: { store: storeSlug.value },
+        params: { store: newSlug },
       })
       if (store?.name) storeName.value = store.name
     } catch {
-      // mantém o fallback 'Sua loja'
+      storeName.value = 'Sua loja'
     }
+  } else {
+    storeName.value = 'Sua loja'
   }
+}, { immediate: true })
+
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
 })
 
 onUnmounted(() => {
