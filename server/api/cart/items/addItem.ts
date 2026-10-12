@@ -30,11 +30,14 @@ export default defineEventHandler(async (event) => {
         items: [],
       })
     } else {
+      const isClearRequested = clearPreviousCart === true || clearPreviousCart === 'true'
       const productStore = String(product.store || '').replace(/^@/, '').toLowerCase()
       const currentCartStore = String(cart.store || '').replace(/^@/, '').toLowerCase()
+      const existingItemCount = await CartItemSchema.countDocuments({ cartId: String(cart._id) })
+      const hasItems = (cart.items?.length > 0) || existingItemCount > 0
 
-      if (cart.items?.length && currentCartStore && currentCartStore !== productStore) {
-        if (clearPreviousCart) {
+      if (hasItems && currentCartStore && currentCartStore !== productStore) {
+        if (isClearRequested) {
           await CartItemSchema.deleteMany({ cartId: String(cart._id) })
           cart.items = []
           cart.store = product.store
@@ -50,7 +53,8 @@ export default defineEventHandler(async (event) => {
             },
           })
         }
-      } else if (!cart.items?.length && currentCartStore !== productStore) {
+      } else if (!hasItems && currentCartStore !== productStore) {
+        cart.items = []
         cart.store = product.store
         await cart.save()
       }

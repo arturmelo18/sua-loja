@@ -63,7 +63,7 @@
             >+</button>
           </div>
 
-          <button class="btn btn-dark" style="width:100%;" :disabled="isAdding" @click="addToCart">
+          <button class="btn btn-dark" style="width:100%;" :disabled="isAdding" @click="addToCart()">
             <i class="ti ti-shopping-cart"></i>
             {{ isAdding ? 'Adicionando...' : 'Adicionar ao Carrinho' }}
           </button>
@@ -125,7 +125,9 @@ onMounted(async () => {
   }
 })
 
-async function addToCart(clearPreviousCart = false) {
+async function addToCart(clearPreviousCart: boolean = false) {
+  const shouldClear = clearPreviousCart === true
+
   if(!authStore.getUser) {
     ElMessage.info('Para realizar uma compra você precisa estar cadastrado em nosso site.')
     return
@@ -151,13 +153,23 @@ async function addToCart(clearPreviousCart = false) {
         productId: state.product._id,
         quantity: state.saleQtd,
         variantName: selectedVariant.value || undefined,
-        clearPreviousCart,
+        clearPreviousCart: shouldClear,
       },
     })
     authStore.setCart(result.cart)
     ElMessage.success('Produto adicionado ao carrinho!')
   } catch (error: any) {
-    if (error.statusCode === 409 && error.data?.data?.isStoreConflict) {
+    const isConflict =
+      error.statusCode === 409 ||
+      error.status === 409 ||
+      error.response?.status === 409 ||
+      error.data?.statusCode === 409
+    const hasConflictData =
+      error.data?.data?.isStoreConflict ||
+      error.data?.isStoreConflict ||
+      error.data?.statusMessage?.includes('outra loja')
+
+    if (isConflict && hasConflictData) {
       try {
         await ElMessageBox.confirm(
           'Seu carrinho já contém produtos de outra loja. Deseja limpar o carrinho atual para adicionar produtos desta loja?',
