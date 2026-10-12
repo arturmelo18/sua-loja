@@ -51,6 +51,17 @@ export default defineEventHandler(async (event) => {
             { new: true, upsert: true }
         )
 
+        if (isApproved) {
+            await UserSchema.findByIdAndUpdate(String(ownerId), {
+                kind: 'admin',
+                store: normalizedStore,
+            })
+        } else {
+            await UserSchema.findByIdAndUpdate(String(ownerId), {
+                store: normalizedStore,
+            })
+        }
+
         return store
     } catch (error: any) {
         console.error(error)

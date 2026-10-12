@@ -58,21 +58,21 @@
       <section v-else-if="section === 'products'" class="panel">
         <div class="panel-heading"><h2>Todos os produtos</h2><span>{{ productTotal }} resultados</span></div>
         <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Loja</th><th>Preço</th><th>Quantidade</th><th>Status</th></tr></thead>
-          <tbody><tr v-for="product in products" :key="product._id"><td>{{ product.name }}</td><td>{{ product.store }}</td><td>{{ formatPrice(product.price) }}</td><td>{{ product.quantity }}</td><td>{{ product.published ? 'Publicado' : 'Rascunho' }}</td></tr></tbody>
+          <tbody><tr v-for="product in products" :key="product._id"><td>{{ product.name }}</td><td>{{ getStoreName(product.store) }}</td><td>{{ formatPrice(product.price) }}</td><td>{{ product.quantity }}</td><td>{{ product.published ? 'Publicado' : 'Rascunho' }}</td></tr></tbody>
         </table></div>
       </section>
 
       <section v-else-if="section === 'users'" class="panel">
         <div class="panel-heading"><h2>Usuários</h2><span>{{ userTotal }} resultados</span></div>
         <div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Loja</th><th>Perfil</th></tr></thead>
-          <tbody><tr v-for="user in users" :key="user._id"><td>{{ user.name }}</td><td>{{ user.email }}</td><td><span class="status active">{{ user.kind }}</span></td></tr></tbody>
+          <tbody><tr v-for="user in users" :key="user._id"><td>{{ user.name }}</td><td>{{ user.email }}</td><td>{{ getStoreName(user.store) }}</td><td><span :class="['status', `role-${user.kind || 'user'}`]">{{ roleLabel(user.kind) }}</span></td></tr></tbody>
         </table></div>
       </section>
 
       <section v-else class="panel">
         <div class="panel-heading"><h2>Pedidos</h2><span>{{ orderTotal }} resultados</span></div>
         <div class="table-wrap"><table><thead><tr><th>Código</th><th>Cliente</th><th>Loja</th><th>Total</th><th>Status</th></tr></thead>
-          <tbody><tr v-for="order in orders" :key="order._id"><td>{{ order.saleCode }}</td><td>{{ order.user?.name || '-' }}</td><td>{{ order.items?.[0]?.product?.store || '-' }}</td><td>{{ formatPrice(order.total) }}</td><td>{{ order.status }}</td></tr></tbody>
+          <tbody><tr v-for="order in orders" :key="order._id"><td>{{ order.saleCode }}</td><td>{{ order.user?.name || '-' }}</td><td>{{ getStoreName(order.items?.[0]?.product?.store) }}</td><td>{{ formatPrice(order.total) }}</td><td><span :class="['status', `order-${(order.status || '').toLowerCase()}`]">{{ orderStatusLabel(order.status) }}</span></td></tr></tbody>
         </table></div>
       </section>
     </main>
@@ -107,8 +107,35 @@ const tabs = [
 ]
 
 async function loadStores() {
-  const result = await $fetch<{ data: ManagedStore[] }>('/api/store/listStores', { params: { limit: 100 } })
+  const result = await $fetch<{ data: ManagedStore[] }>('/api/store/listStores', { params: { limit: 100, all: 'true' } })
   stores.value = result.data
+}
+
+function getStoreName(storeIdentifier?: string) {
+  if (!storeIdentifier) return '-'
+  const normalized = String(storeIdentifier).replace(/^@/, '').toLowerCase()
+  const matched = stores.value.find(s =>
+    String(s._id) === storeIdentifier ||
+    String(s.store || '').toLowerCase() === normalized
+  )
+  return matched ? matched.name : storeIdentifier
+}
+
+function orderStatusLabel(status: string) {
+  const map: Record<string, string> = {
+    PENDING: 'Aguardando pagamento',
+    PAID: 'Pago',
+    EXPIRED: 'Expirado',
+    CANCELLED: 'Cancelado',
+    REFUNDED: 'Reembolsado',
+  }
+  return map[status] || status
+}
+
+function roleLabel(kind?: string) {
+  if (kind === 'superadmin') return 'Superadmin'
+  if (kind === 'admin') return 'Admin'
+  return 'User'
 }
 
 async function loadProducts() {
@@ -155,6 +182,8 @@ async function updateApproval(store: ManagedStore, approvalStatus: 'approved' | 
   })
   store.approvalStatus = approvalStatus
   store.active = approvalStatus === 'approved'
+  ElMessage.success(`Loja ${approvalStatus === 'approved' ? 'aprovada' : approvalStatus === 'rejected' ? 'recusada' : 'suspensa'} com sucesso!`)
+  await loadStores()
 }
 
 function approvalLabel(status?: Store['approvalStatus']) {
@@ -206,6 +235,12 @@ td small { display: block; margin-top: 3px; color: #756c66; font-size: .75rem; }
 .status.approval-pending { color: #8a5a00; background: #fff4d6; }
 .status.approval-approved { color: #2d7a3a; background: #e8f5e9; }
 .status.approval-rejected { color: #a12b37; background: #fde8e8; }
+.status.role-admin { color: #0d47a1; background: #e3f2fd; }
+.status.role-superadmin { color: #4a148c; background: #f3e5f5; }
+.status.role-user { color: #555; background: #f5f5f5; }
+.status.order-pending { color: #8a5a00; background: #fff4d6; }
+.status.order-paid { color: #2d7a3a; background: #e8f5e9; }
+.status.order-cancelled, .status.order-expired { color: #a12b37; background: #fde8e8; }
 .actions-cell { display: flex; gap: 6px; }
 .row-action.approve { border-color: #2d7a3a; color: #2d7a3a; }
 .row-action.reject { border-color: #a12b37; color: #a12b37; }

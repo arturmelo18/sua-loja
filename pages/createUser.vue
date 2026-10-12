@@ -107,7 +107,7 @@
 
         <div class="text-center">
           <span class="text-sm text-gray-600">Já tem conta? </span>
-          <nuxt-link to="/" class="text-burgundy font-semibold">Entrar</nuxt-link>
+          <nuxt-link to="/loginPage" class="text-burgundy font-semibold">Entrar</nuxt-link>
         </div>
       </div>
     </div>

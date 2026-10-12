@@ -7,9 +7,12 @@ export default defineEventHandler(async (event) => {
   const page = Math.max(Number(query.page) || 1, 1)
   const skip = (page - 1) * limit
 
+  const includeAll = query.all === 'true'
+  const filter = includeAll ? {} : { active: true }
+
   const [stores, total] = await Promise.all([
-    StoreSchema.find({active: true}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-    StoreSchema.countDocuments(),
+    StoreSchema.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    StoreSchema.countDocuments(filter),
   ])
 
   const ownerIds = stores.map(store => store.ownerId)
