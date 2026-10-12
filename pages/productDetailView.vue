@@ -125,7 +125,7 @@ onMounted(async () => {
   }
 })
 
-async function addToCart() {
+async function addToCart(clearPreviousCart = false) {
   if(!authStore.getUser) {
     ElMessage.info('Para realizar uma compra você precisa estar cadastrado em nosso site.')
     return
@@ -151,12 +151,29 @@ async function addToCart() {
         productId: state.product._id,
         quantity: state.saleQtd,
         variantName: selectedVariant.value || undefined,
+        clearPreviousCart,
       },
     })
     authStore.setCart(result.cart)
     ElMessage.success('Produto adicionado ao carrinho!')
   } catch (error: any) {
-    ElMessage.error(error.data?.statusMessage || 'Erro ao adicionar ao carrinho')
+    if (error.statusCode === 409 && error.data?.data?.isStoreConflict) {
+      try {
+        await ElMessageBox.confirm(
+          'Seu carrinho já contém produtos de outra loja. Deseja limpar o carrinho atual para adicionar produtos desta loja?',
+          'Trocar de Loja',
+          {
+            confirmButtonText: 'Sim, limpar carrinho',
+            cancelButtonText: 'Cancelar',
+            type: 'warning',
+          }
+        )
+        return await addToCart(true)
+      } catch {
+        return
+      }
+    }
+    ElMessage.error(error.data?.statusMessage || error.statusMessage || 'Erro ao adicionar ao carrinho')
   } finally {
     isAdding.value = false
   }

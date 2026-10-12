@@ -64,7 +64,12 @@ const total = computed(() =>
 const formatPrice = (value: number) =>
   (value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-onMounted(() => loadStoreTheme({ ownerId: authStore.getUser?._id }))
+onMounted(async () => {
+  const storeSlug = cart.value?.store || authStore.getCart?.store || (cartItems.value?.[0] as any)?.product?.store
+  if (storeSlug) {
+    await loadStoreTheme({ storeSlug: String(storeSlug).replace(/^@/, '') })
+  }
+})
 
 async function goToPayment() {
   if (!cart.value?._id || !user.value?._id) {

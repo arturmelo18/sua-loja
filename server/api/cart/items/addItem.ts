@@ -2,7 +2,7 @@ import { CartSchema, CartItemSchema } from '~/server/models/cart'
 import { ProductSchema } from '~/server/models/product'
 
 export default defineEventHandler(async (event) => {
-  const { cartId: requestedCartId, userId, productId, quantity, variantName } = await readBody(event)
+  const { cartId: requestedCartId, userId, productId, quantity, variantName, clearPreviousCart } = await readBody(event)
 
   if (!userId || !productId || !Number.isInteger(quantity) || quantity < 1) {
     throw createError({
@@ -29,6 +29,31 @@ export default defineEventHandler(async (event) => {
         store: product.store,
         items: [],
       })
+    } else {
+      const productStore = String(product.store || '').replace(/^@/, '').toLowerCase()
+      const currentCartStore = String(cart.store || '').replace(/^@/, '').toLowerCase()
+
+      if (cart.items?.length && currentCartStore && currentCartStore !== productStore) {
+        if (clearPreviousCart) {
+          await CartItemSchema.deleteMany({ cartId: String(cart._id) })
+          cart.items = []
+          cart.store = product.store
+          await cart.save()
+        } else {
+          throw createError({
+            statusCode: 409,
+            statusMessage: 'Seu carrinho já contém produtos de outra loja. Deseja limpar o carrinho atual para adicionar produtos desta loja?',
+            data: {
+              isStoreConflict: true,
+              currentStore: cart.store,
+              newStore: product.store,
+            },
+          })
+        }
+      } else if (!cart.items?.length && currentCartStore !== productStore) {
+        cart.store = product.store
+        await cart.save()
+      }
     }
 
     const cartId = String(cart._id)

@@ -138,8 +138,17 @@ function availableQuantity(item: CartItem): number {
     return item.product.variants.find(variant => variant.name === item.variantName)?.quantity ?? 0
 }
 
+const cartStoreSlug = computed(() => {
+    return String(state.cart?.store || authStore.getCart?.store || (state.cart?.items?.[0] as any)?.product?.store || '').replace(/^@/, '')
+})
+
+watch(cartStoreSlug, async (newSlug) => {
+    if (newSlug) {
+        await loadStoreTheme({ storeSlug: newSlug })
+    }
+}, { immediate: true })
+
 onMounted(async () => {
-    await loadStoreTheme({ ownerId: authStore.getUser?._id })
     isLoading.value = true
     const userId = authStore.getUser?._id
 
@@ -148,7 +157,9 @@ onMounted(async () => {
             method: 'GET',
             params: { userId },
         })
-        console.log('cart:', JSON.stringify(state.cart?.items?.[0], null, 2))
+        if (state.cart?.store) {
+            await loadStoreTheme({ storeSlug: state.cart.store.replace(/^@/, '') })
+        }
     } catch (e) {
         console.error('erro getCart:', e)
     }
@@ -409,8 +420,8 @@ definePageMeta({ middleware: 'auth' })
     display: block;
     width: calc(100% - 3rem);
     margin: 1.25rem 1.5rem;
-    background: var(--black) !important;
-    border-color: var(--black) !important;
+    background: var(--store-color, #7A1F2E) !important;
+    border-color: var(--store-color, #7A1F2E) !important;
     color: #fff !important;
     font-size: 12px;
     font-weight: 500;
@@ -422,8 +433,8 @@ definePageMeta({ middleware: 'auth' })
 }
 
 .btn-primary:hover {
-    background: var(--burgundy) !important;
-    border-color: var(--burgundy) !important;
+    filter: brightness(0.9);
+    opacity: 0.95;
 }
 
 .security-note {
@@ -437,7 +448,7 @@ definePageMeta({ middleware: 'auth' })
 }
 
 .empty-state { text-align: center; padding: 5rem 2rem; }
-.empty-state i { font-size: 56px; color: #c0a090; display: block; margin-bottom: 1rem; }
+.empty-state i { font-size: 56px; color: var(--store-color, #7A1F2E); opacity: 0.35; display: block; margin-bottom: 1rem; }
 .empty-state p { color: var(--gray); font-size: 15px; margin-bottom: 1.5rem; }
 .loading-state { padding: 2rem 0; }
 
