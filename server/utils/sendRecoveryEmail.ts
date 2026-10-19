@@ -4,18 +4,23 @@ export async function sendRecoveryEmail(email: string, code: string) {
   if (!config.resendApiKey || !config.resendFromEmail) {
     throw createError({
       statusCode: 500,
-      statusMessage: `O envio de e-mail ainda não está configurado no servidor.: ${error.message}`,
+      // Removido o ${error.message} que estava indefinido
+      statusMessage: 'O envio de e-mail ainda não está configurado no servidor.', 
     })
   }
+
+  const cleanEmail = config.resendFromEmail.trim()
+  
+  const formattedFrom = `Loja Oficial FATEC <${cleanEmail}>`
 
   const response = await $fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${config.resendApiKey}`,
+      Authorization: `Bearer ${config.resendApiKey.trim()}`,
       'Content-Type': 'application/json',
     },
     body: {
-      from: config.resendFromEmail,
+      from: formattedFrom,
       to: [email],
       subject: 'Código para recuperar sua conta',
       html: `
