@@ -6,10 +6,10 @@
       <aside class="admin-sidebar">
         <div class="adm-sidebar-title">Painel Admin</div>
         <ul class="adm-nav">
-          <li><a currentSection = 'dashboard'" :class="{ active: currentSection === 'dashboard' }">Dashboard</a></li>
+          <li><a @click="currentSection = 'dashboard'" :class="{ active: currentSection === 'dashboard' }">Dashboard</a></li>
           <li><a @click="loadStore(); currentSection = 'loja'" :class="{ active: currentSection === 'loja' }">Loja</a></li> 
           <li><a @click="loadAllOrders(); currentSection = 'pedidos'" :class="{ active: currentSection === 'pedidos' }">Pedidos</a></li>
-          <li><a @click="currentSection = 'produtos'" :class="{ active: currentSection === 'produtos' }">Produtos</a></li>
+          <li><a @click="searchProducts(true); currentSection = 'produtos'" :class="{ active: currentSection === 'produtos' }">Produtos</a></li>
           <li><a @click="navigateTo('/productPage')" class="adm-nav-link">+ Novo Produto</a></li>
         </ul>
       </aside>
@@ -18,7 +18,7 @@
 
         <!-- Dashboard -->
         <div v-if="currentSection === 'dashboard'">
-          <AdminDashboard :store-color="storeForm.color" />
+          <AdminDashboard :store-color="storeForm.color" :global-store-filter="storeSlug" />
         </div>
 
         <!-- Produtos -->
@@ -246,6 +246,10 @@ const currentSection    = ref('dashboard')
 const LIMIT        = 10
 const ORDERS_LIMIT = 10
 
+const storeSlug = computed(() => {
+  return String(storeForm.store || authStore.store || authStore.user?.store || '').trim().replace(/^@/, '').toLowerCase()
+})
+
 const state = reactive({
   page:     1,
   total:    0,
@@ -267,7 +271,7 @@ async function searchProducts(reset = false) {
     if (reset) { state.page = 1; state.products = [] }
     const result = await $fetch<any>('/api/product/searchProduct', {
       method: 'POST',
-      body: { page: state.page, limit: LIMIT, store: authStore.user?.store || undefined },
+      body: { page: state.page, limit: LIMIT, store: storeSlug.value || undefined },
     })
     state.page     = result.pagination.page
     state.total    = result.pagination.total
@@ -312,7 +316,7 @@ async function loadAllOrders() {
   isLoadingOrders.value = true
   try {
     const result = await $fetch<any>('/api/order/listAllOrders', {
-      params: { page: ordersPage.value, limit: ORDERS_LIMIT, search: orderSearch.value, store: authStore.user?.store || undefined },
+      params: { page: ordersPage.value, limit: ORDERS_LIMIT, search: orderSearch.value, store: storeSlug.value || undefined },
     })
     allOrders.value    = result.data as Order[]
     ordersTotal.value  = result.pagination.total
@@ -367,7 +371,7 @@ const allProducts = ref<Product[]>([])
 async function loadAllProducts() {
   const result = await $fetch<any>('/api/product/searchProduct', {
     method: 'POST',
-    body: { page: 1, limit: 9999 },
+    body: { page: 1, limit: 9999, store: storeSlug.value || undefined },
   })
   allProducts.value = result.data as Product[]
 }
@@ -391,16 +395,19 @@ async function loadStore() {
       params: { ownerId: authStore.user?._id },
     })
     if (store) {
-      storeForm.name      = store.name
-      storeForm.store = store.store || ''
-      storeForm.color = store.color || '#7A1F2E'
-      storeForm.slides    = store.slides
+      storeForm.name   = store.name
+      storeForm.store  = store.store || ''
+      storeForm.color  = store.color || '#7A1F2E'
+      storeForm.slides = store.slides || []
+      if (store.store) {
+        authStore.setStore(store.store)
+      }
     } else {
       // default se não existir ainda
-      storeForm.name      = 'Fatecano'
-      storeForm.store = 'fatecano'
-      storeForm.color = '#7A1F2E'
-      storeForm.slides    = [{ title: '', description: '', image: '' }]
+      storeForm.name   = 'Fatecano'
+      storeForm.store  = 'fatecano'
+      storeForm.color  = '#7A1F2E'
+      storeForm.slides = [{ title: '', description: '', image: '' }]
     }
   } catch {
     ElMessage.error('Erro ao carregar configurações da loja')
@@ -475,9 +482,9 @@ async function saveStore() {
 
 definePageMeta({ middleware: 'auth' })
 
-onMounted(() => {
-  loadStore()
-  searchProducts()
+onMounted(async () => {
+  await loadStore()
+  searchProducts(true)
   loadAllProducts()
 })
 </script>

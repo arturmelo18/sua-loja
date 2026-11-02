@@ -162,7 +162,7 @@ let statusChart: Chart | null = null
 
 async function loadProductsForFilter() {
   try {
-    const storeToFetch = props.isSuperAdmin ? props.globalStoreFilter : authStore.user?.store
+    const storeToFetch = props.globalStoreFilter || authStore.store || authStore.user?.store
     const res = await $fetch<any>('/api/product/searchProduct', {
       method: 'POST',
       body: { limit: 1000, page: 1, store: storeToFetch || undefined },
@@ -176,7 +176,7 @@ async function loadProductsForFilter() {
 async function loadDashboard() {
   isLoadingDash.value = true
   try {
-    const storeToFetch = props.isSuperAdmin ? props.globalStoreFilter : authStore.user?.store
+    const storeToFetch = props.globalStoreFilter || authStore.store || authStore.user?.store
     const result = await $fetch<any>('/api/order/dashboard', {
       params: {
         startDate: dashFilters.startDate || undefined,

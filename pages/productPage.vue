@@ -155,7 +155,19 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 onMounted(async () => {
   await loadStoreTheme({ ownerId: authStore.user?._id })
-    if (!route.query._id) return
+  if (!authStore.store && authStore.user?._id) {
+    try {
+      const storeData = await $fetch<any>('/api/store/getStore', {
+        params: { ownerId: authStore.user._id },
+      })
+      if (storeData?.store) {
+        authStore.setStore(storeData.store)
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (!route.query._id) return
     state.isNew = false
     try {
         const result = await $fetch<Product>('/api/product/getProduct', {
@@ -182,7 +194,7 @@ const handleSave = async () => {
 
     const body = {
       ...state.product,
-      store: state.product.store || authStore.user?.store,
+      store: state.product.store || authStore.store || authStore.user?.store,
       active: state.product.published,
       quantity: state.product.variants?.length
         ? totalVariantQuantity.value
