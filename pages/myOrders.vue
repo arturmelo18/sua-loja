@@ -57,10 +57,6 @@
 
           <div class="order-foot">
             <span class="order-total">Total: {{ formatPrice(order.total / 100) }}</span>
-            <span class="pickup-tag">
-              <i class="ti ti-map-pin" aria-hidden="true"></i>
-              Retirada na Fatec
-            </span>
           </div>
 
         </div>

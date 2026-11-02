@@ -49,10 +49,17 @@ export default defineEventHandler(async (event: any) => {
   const total = items.reduce((acc: number, i: any) => acc + i.product.price * i.quantity, 0)
   const externalId = `order-${userId}-${Date.now()}`
   const saleCode = generateSaleCode()
+  const forwardedHost = getRequestHeader(event, 'x-forwarded-host')
+  const forwardedProto = getRequestHeader(event, 'x-forwarded-proto') || 'https'
+  const originFromForwarded = forwardedHost ? `${forwardedProto}://${forwardedHost}` : ''
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''
+
   const appUrl = String(
     config.public.appUrl
       || process.env.APP_URL
-      || getRequestURL(event).origin
+      || originFromForwarded
+      || vercelUrl
+      || getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin
   ).replace(/\/$/, '')
 
   let abacateResponse

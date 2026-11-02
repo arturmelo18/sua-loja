@@ -33,12 +33,14 @@ export default defineEventHandler(async (event) => {
       const isClearRequested = clearPreviousCart === true || clearPreviousCart === 'true'
       const productStore = String(product.store || '').replace(/^@/, '').toLowerCase()
       const currentCartStore = String(cart.store || '').replace(/^@/, '').toLowerCase()
-      const existingItemCount = await CartItemSchema.countDocuments({ cartId: String(cart._id) })
-      const hasItems = (cart.items?.length > 0) || existingItemCount > 0
+      const existingItemCount = cart.items?.length || 0
+      const hasItems = existingItemCount > 0
 
       if (hasItems && currentCartStore && currentCartStore !== productStore) {
         if (isClearRequested) {
-          await CartItemSchema.deleteMany({ cartId: String(cart._id) })
+          if (cart.items?.length) {
+            await CartItemSchema.deleteMany({ _id: { $in: cart.items } })
+          }
           cart.items = []
           cart.store = product.store
           await cart.save()
@@ -69,11 +71,13 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Estoque insuficiente' })
     }
 
-    const existingItem = await CartItemSchema.findOne({
-      cartId,
-      product: productId,
-      variantName: variantName || '',
-    })
+    const existingItem = (cart.items?.length > 0)
+      ? await CartItemSchema.findOne({
+          _id: { $in: cart.items },
+          product: productId,
+          variantName: variantName || '',
+        })
+      : null
 
     if (existingItem) {
       if (variant && existingItem.quantity + quantity > variant.quantity) {
@@ -83,6 +87,11 @@ export default defineEventHandler(async (event) => {
       existingItem.price = product.price
       await existingItem.save()
       await existingItem.populate('product')
+
+      await CartSchema.findByIdAndUpdate(cart._id, {
+        $addToSet: { items: existingItem._id },
+      })
+
       const updatedCart = await CartSchema.findById(cart._id)
         .populate('user')
         .populate({ path: 'items', populate: { path: 'product' } })

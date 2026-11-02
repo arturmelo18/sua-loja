@@ -21,16 +21,6 @@
           </div>
         </div>
 
-        <div class="delivery-info">
-          <span class="summary-label">Endereço de entrega</span>
-          <p class="address-text">
-            {{ user?.address?.street }}, {{ user?.address?.number }}
-            <span v-if="user?.address?.complement"> — {{ user.address.complement }}</span><br />
-            {{ user?.address?.neighborhood }} · {{ user?.address?.city }}/{{ user?.address?.state }}<br />
-            CEP {{ user?.address?.zipcode }}
-          </p>
-        </div>
-
         <button class="btn btn-dark" :disabled="isLoading" @click="goToPayment" style="width: 100%;">
           {{ isLoading ? 'Aguarde...' : 'Ir para Pagamento' }}
         </button>
