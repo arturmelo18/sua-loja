@@ -3,6 +3,7 @@
     <header class="landing-nav">
       <button class="landing-brand" type="button" @click="navigateTo('/')">Sua Loja</button>
       <nav class="landing-nav__links" aria-label="Navegação principal">
+        <a href="#lojas">Explorar lojas</a>
         <a href="#como-funciona">Como funciona</a>
         <a href="#loja-demo">Loja demo</a>
       </nav>
@@ -63,6 +64,69 @@
         </div>
       </section>
 
+      <section id="lojas" class="stores-section">
+        <div class="section-intro">
+          <p class="eyebrow">Vitrine da Comunidade</p>
+          <h2>Explore as lojas ativas.</h2>
+          <p class="stores-intro-desc">
+            Conheça os espaços criados por empreendedores e compre diretamente dos seus produtores favoritos.
+          </p>
+        </div>
+
+        <div v-if="loadingStores" class="stores-grid">
+          <div v-for="n in 3" :key="n" class="store-card store-card--skeleton">
+            <div class="store-card__banner skeleton-shimmer"></div>
+            <div class="store-card__body">
+              <div class="skeleton-line" style="width: 60%; height: 22px;"></div>
+              <div class="skeleton-line" style="width: 40%; height: 14px; margin-top: 8px;"></div>
+              <div class="skeleton-line" style="width: 90%; height: 14px; margin-top: 14px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="stores.length === 0" class="stores-empty">
+          <p>Nenhuma loja disponível no momento.</p>
+          <button class="primary-button" type="button" @click="navigateTo('/createUser?intent=store')">
+            Criar minha loja agora
+          </button>
+        </div>
+
+        <div v-else class="stores-grid">
+          <article
+            v-for="store in stores"
+            :key="store._id"
+            class="store-card"
+            @click="navigateTo(`/${store.store}`)"
+          >
+            <div
+              class="store-card__banner"
+              :style="{
+                backgroundColor: store.color || '#7A1F2E',
+                backgroundImage: store.image ? `url(${store.image})` : 'none',
+              }"
+            >
+              <span v-if="!store.image" class="store-card__badge">
+                {{ (store.name || store.store).charAt(0).toUpperCase() }}
+              </span>
+            </div>
+            <div class="store-card__body">
+              <div class="store-card__header">
+                <h3 class="store-card__title">{{ store.name || store.store }}</h3>
+                <span class="store-card__slug">@{{ store.store }}</span>
+              </div>
+              <p class="store-card__desc">
+                {{ store.description || 'Visite a vitrine para conhecer todos os produtos disponíveis.' }}
+              </p>
+              <div class="store-card__footer">
+                <span class="store-card__cta">
+                  Conhecer loja <span class="arrow">→</span>
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section id="como-funciona" class="steps-section">
         <div class="section-intro">
           <p class="eyebrow">Sem complicação</p>
@@ -96,10 +160,13 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 
-onMounted(() => {
-  // O usuário agora pode permanecer na landing page se desejar.
-  // A barra de navegação refletirá o status de login.
-})
+const { data: storesResponse, status: storesStatus } = await useAsyncData(
+  'landing-stores',
+  () => $fetch<any>('/api/store/listStores', { params: { limit: 12 } })
+)
+
+const stores = computed(() => storesResponse.value?.data || [])
+const loadingStores = computed(() => storesStatus.value === 'pending')
 
 const demoProducts = [
   { name: 'Bolsa Mini', price: 'R$ 89,90', color: 'linear-gradient(135deg, #d98c72, #9e4b47)' },
@@ -339,9 +406,174 @@ const steps = [
   font-size: 0.7rem;
 }
 
+/* ===== SEÇÃO EXPLORAR LOJAS ===== */
+.stores-section {
+  padding: 88px max(24px, calc((100% - 1240px) / 2)) 96px;
+  background: #fbf7f1;
+  border-top: 1px solid rgba(32, 28, 26, 0.08);
+}
+
+.stores-intro-desc {
+  max-width: 520px;
+  margin: 18px 0 0;
+  color: #635b56;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.stores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+  margin-top: 48px;
+}
+
+.store-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(32, 28, 26, 0.09);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.store-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(122, 31, 46, 0.08);
+  border-color: rgba(122, 31, 46, 0.35);
+}
+
+.store-card__banner {
+  height: 130px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.store-card__badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.store-card__body {
+  padding: 22px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.store-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.store-card__title {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #201c1a;
+}
+
+.store-card__slug {
+  font-size: 0.78rem;
+  color: #7a1f2e;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.store-card__desc {
+  margin: 12px 0 20px;
+  color: #756c66;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.store-card__footer {
+  border-top: 1px solid #f0e8e0;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.store-card__cta {
+  color: #7a1f2e;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 0.2s ease;
+}
+
+.store-card:hover .store-card__cta {
+  gap: 10px;
+}
+
+.stores-empty {
+  margin-top: 48px;
+  padding: 48px 24px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px dashed rgba(32, 28, 26, 0.2);
+  border-radius: 8px;
+}
+
+.stores-empty p {
+  margin: 0 0 20px;
+  color: #756c66;
+  font-size: 1rem;
+}
+
+.store-card--skeleton .store-card__banner {
+  background: #ece4db;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #ece4db 25%, #f5eee5 50%, #ece4db 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line {
+  background: #ece4db;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .steps-section {
   padding: 92px max(24px, calc((100% - 1240px) / 2)) 104px;
-  background: #fbf7f1;
+  background: #f2ede6;
+  border-top: 1px solid rgba(32, 28, 26, 0.08);
 }
 
 .section-intro h2,

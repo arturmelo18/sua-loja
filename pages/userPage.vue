@@ -137,12 +137,28 @@ const state = reactive({
 
 const authStore = useAuthStore()
 const { storeColor, loadStoreTheme } = useStoreTheme()
+const route = useRoute()
 const isLoading = ref(false)
 
-const activeTab = ref('profile')
+const activeTab = ref(typeof route.query.tab === 'string' ? route.query.tab : 'profile')
 const stores = ref<any[]>([])
 const loadingStores = ref(false)
 const hasStore = ref(false)
+
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (newTab && typeof newTab === 'string') {
+      activeTab.value = newTab
+    }
+  }
+)
+
+watch(activeTab, (tab) => {
+  if (tab === 'explore' && stores.value.length === 0) {
+    fetchStores()
+  }
+})
 
 async function checkOwnerStore(userId: string) {
   try {

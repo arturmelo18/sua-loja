@@ -6,6 +6,7 @@
 
     <ul class="nav-links" id="nav-links-desktop">
       <li v-if="storeSlug"><nuxt-link :to="storePath">Todos os produtos</nuxt-link></li>
+      <li><nuxt-link to="/userPage?tab=explore">Explorar Lojas</nuxt-link></li>
     </ul>
 
     <div class="nav-actions">
@@ -23,6 +24,10 @@
               <el-dropdown-item class="w-full nav-links-mobile-item" v-if="storeSlug" @click="navigateTo(storePath)">
                 <i class="uil uil-apps"></i>
                 <span>Todos os produtos</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/userPage?tab=explore')">
+                <i class="uil uil-shop"></i>
+                <span>Explorar Lojas</span>
               </el-dropdown-item>
               <el-dropdown-item class="w-full" @click="navigateTo('/userPage')">
                 <i class="uil uil-user"></i>
@@ -49,6 +54,10 @@
               <el-dropdown-item class="w-full nav-links-mobile-item" v-if="storeSlug" @click="navigateTo(storePath)">
                 <i class="uil uil-apps"></i>
                 <span>Todos os produtos</span>
+              </el-dropdown-item>
+              <el-dropdown-item class="w-full" @click="navigateTo('/userPage?tab=explore')">
+                <i class="uil uil-shop"></i>
+                <span>Explorar Lojas</span>
               </el-dropdown-item>
               <el-dropdown-item class="w-full" @click="navigateTo('/loginPage')">
                 <i class="uil uil-signin"></i>
