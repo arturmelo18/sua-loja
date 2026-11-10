@@ -86,14 +86,23 @@ async function authUser() {
     }
 
     
-    const cart = await $fetch<Cart | null>('/api/cart/getCart', {
-      method: 'GET',
-      params: { userId: response._id }
-    }).catch(() => null)
+    const [cart, store] = await Promise.all([
+      $fetch<Cart | null>('/api/cart/getCart', {
+        method: 'GET',
+        params: { userId: response._id }
+      }).catch(() => null),
+      $fetch<any>('/api/store/getStore', {
+        method: 'GET',
+        params: { ownerId: response._id }
+      }).catch(() => null),
+    ])
 
     authStore.setUser(response)
     if (cart) {
       authStore.setCart(cart)
+    }
+    if (store?.store) {
+      authStore.setStore(store.store)
     }
 
     ElMessage.success('Autenticação realizada com sucesso!')

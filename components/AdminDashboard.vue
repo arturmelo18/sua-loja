@@ -160,9 +160,61 @@ let lineChart:   Chart | null = null
 let donutChart:  Chart | null = null
 let statusChart: Chart | null = null
 
+async function resolveStore(): Promise<string | undefined> {
+  if (props.isSuperAdmin) {
+    const filter = String(props.globalStoreFilter || '').trim().replace(/^@/, '')
+    return filter || undefined
+  }
+
+  const propStore = String(props.globalStoreFilter || '').trim().replace(/^@/, '')
+  if (propStore) return propStore
+
+  const authStoreSlug = String(authStore.store || '').trim().replace(/^@/, '')
+  if (authStoreSlug) return authStoreSlug
+
+  const userStore = String(authStore.user?.store || '').trim().replace(/^@/, '')
+  if (userStore) return userStore
+
+  if (authStore.user?._id) {
+    try {
+      const storeData = await $fetch<any>('/api/store/getStore', {
+        params: { ownerId: authStore.user._id },
+      })
+      if (storeData?.store) {
+        const fetchedSlug = String(storeData.store).trim().replace(/^@/, '')
+        authStore.setStore(fetchedSlug)
+        return fetchedSlug
+      }
+    } catch (error) {
+      console.error('Erro ao buscar loja do usuário', error)
+    }
+  }
+
+  return undefined
+}
+
+function resetDashboardData() {
+  dash.kpis = {
+    totalRevenue:  0,
+    paidRevenue:   0,
+    avgTicket:     0,
+    totalOrders:   0,
+    paidOrders:    0,
+    pendingOrders: 0,
+  }
+  dash.salesByDay     = []
+  dash.salesByProduct = []
+  dash.salesByStatus  = []
+}
+
 async function loadProductsForFilter() {
   try {
-    const storeToFetch = props.globalStoreFilter || authStore.store || authStore.user?.store
+    const storeToFetch = await resolveStore()
+    if (!props.isSuperAdmin && !storeToFetch) {
+      allProducts.value = []
+      return
+    }
+
     const res = await $fetch<any>('/api/product/searchProduct', {
       method: 'POST',
       body: { limit: 1000, page: 1, store: storeToFetch || undefined },
@@ -176,14 +228,20 @@ async function loadProductsForFilter() {
 async function loadDashboard() {
   isLoadingDash.value = true
   try {
-    const storeToFetch = props.globalStoreFilter || authStore.store || authStore.user?.store
+    const storeToFetch = await resolveStore()
+
+    if (!props.isSuperAdmin && !storeToFetch) {
+      resetDashboardData()
+      return
+    }
+
     const result = await $fetch<any>('/api/order/dashboard', {
       params: {
         startDate: dashFilters.startDate || undefined,
         endDate:   dashFilters.endDate   || undefined,
         status:    dashFilters.status    || undefined,
         productId: dashFilters.productId || undefined,
-        store: storeToFetch || undefined,
+        store:     storeToFetch          || undefined,
       },
     })
     dash.kpis           = result.kpis
@@ -308,6 +366,13 @@ function renderCharts() {
 watch(() => props.globalStoreFilter, () => {
   loadProductsForFilter()
   loadDashboard()
+})
+
+watch(() => authStore.store, (newVal) => {
+  if (!props.isSuperAdmin && newVal) {
+    loadProductsForFilter()
+    loadDashboard()
+  }
 })
 
 onMounted(() => {

@@ -1,4 +1,7 @@
+import { Types } from 'mongoose'
 import { OrderSchema } from '~/server/models/order'
+
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 export default defineEventHandler(async (event) => {
     const { startDate, endDate, productId, status, store } = getQuery(event)
@@ -14,24 +17,33 @@ export default defineEventHandler(async (event) => {
     const matchStage: any = {}
     if (Object.keys(dateFilter).length) matchStage.createdAt = dateFilter
     if (status) matchStage.status = status
-    if (store) matchStage.store = String(store).replace(/^@/, '').toLowerCase()
+    if (store) {
+        const normalizedStore = String(store).replace(/^@/, '').trim()
+        matchStage.store = { $regex: new RegExp(`^${escapeRegex(normalizedStore)}$`, 'i') }
+    }
+
+    const productFilter = productId && Types.ObjectId.isValid(String(productId))
+        ? new Types.ObjectId(String(productId))
+        : null
 
     // ── 1. Vendas por dia (linha do tempo) ──────────────────
     const salesByDay = await OrderSchema.aggregate([
         { $match: matchStage },
-        {
-            $lookup: {
-                from: 'cartitems',
-                localField: 'items',
-                foreignField: '_id',
-                as: 'itemsData',
+        ...(productFilter ? [
+            {
+                $lookup: {
+                    from: 'cartitems',
+                    localField: 'items',
+                    foreignField: '_id',
+                    as: 'itemsData',
+                },
             },
-        },
-        ...(productId ? [{
-            $match: {
-                'itemsData.product': { $elemMatch: { $eq: { $toObjectId: productId } } },
+            {
+                $match: {
+                    'itemsData.product': productFilter,
+                },
             },
-        }] : []),
+        ] : []),
         {
             $group: {
                 _id: {
@@ -64,7 +76,7 @@ export default defineEventHandler(async (event) => {
             },
         },
         { $unwind: '$itemsData' },
-        ...(productId ? [{ $match: { 'itemsData.product': { $toObjectId: productId } } }] : []),
+        ...(productFilter ? [{ $match: { 'itemsData.product': productFilter } }] : []),
         {
             $group: {
                 _id: '$itemsData.product',
@@ -95,7 +107,22 @@ export default defineEventHandler(async (event) => {
 
     // ── 3. Distribuição de status ───────────────────────────
     const salesByStatus = await OrderSchema.aggregate([
-        { $match: Object.keys(dateFilter).length ? { createdAt: dateFilter } : {} },
+        { $match: matchStage },
+        ...(productFilter ? [
+            {
+                $lookup: {
+                    from: 'cartitems',
+                    localField: 'items',
+                    foreignField: '_id',
+                    as: 'itemsData',
+                },
+            },
+            {
+                $match: {
+                    'itemsData.product': productFilter,
+                },
+            },
+        ] : []),
         {
             $group: {
                 _id: '$status',
@@ -116,6 +143,21 @@ export default defineEventHandler(async (event) => {
     // ── 4. KPIs ─────────────────────────────────────────────
     const kpis = await OrderSchema.aggregate([
         { $match: matchStage },
+        ...(productFilter ? [
+            {
+                $lookup: {
+                    from: 'cartitems',
+                    localField: 'items',
+                    foreignField: '_id',
+                    as: 'itemsData',
+                },
+            },
+            {
+                $match: {
+                    'itemsData.product': productFilter,
+                },
+            },
+        ] : []),
         {
             $group: {
                 _id: null,

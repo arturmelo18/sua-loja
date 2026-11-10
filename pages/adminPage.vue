@@ -383,7 +383,7 @@ const isSavingStore  = ref(false)
 
 const storeForm = reactive({
   name: '',
-  store: '',
+  store: authStore.store ? String(authStore.store) : '',
   color: '#7A1F2E',
   slides: [] as StoreSlide[],
 })
